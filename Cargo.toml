@@ -1,0 +1,6 @@
+[package]
+name = "spotify_cli"
+version = "0.1.0"
+authors = ["g551160"]
+
+[dependencies]
