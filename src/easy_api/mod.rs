@@ -3,9 +3,13 @@
     @mod EasyAPI : handles the whole Spotify API bindings,
     and the API rights
 */
+extern crate serde_json;
+
 mod files;
 mod command;
+
 pub use self::command::Command;
+use self::serde_json::{Value};
 
 pub struct EasyAPI {
     command: Command
@@ -16,7 +20,18 @@ impl EasyAPI {
         let command = Command::construct();
         return EasyAPI {command};
     }
-    pub fn search_and_play_first(&self, _type :&str, _search :&str) {
+    pub fn search_and_play_first(&mut self, _type :&str, _search :&str) {
+        let mut result = String::new();
+        self.command.search(_search, _type,&mut result);
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+
+        result =   v["playlists"]["items"][0]["id"].to_string(); // just getting the first result here
+        result = result[1..].to_string(); // removing last '"'
+        result.pop(); // removing first '"'
+        println!("{}",result); 
+
+        self.command.play(result.as_str(), "playlist")
+
 
     }
     pub fn search_and_choose_on_cli(&self) {
