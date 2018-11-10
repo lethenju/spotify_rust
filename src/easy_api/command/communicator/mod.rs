@@ -30,7 +30,7 @@ impl Communicator {
     /**
     * Generate another access token
     */
-    pub fn refresh(&mut self, _base64_secret: &str, _refresh_token : &str, result : &mut String) {
+    pub fn refresh(&mut self, _base64_secret: &str, _refresh_token : &str) {
         println!("Refreshing access token");
         let mut data = Vec::new();
         {
@@ -54,13 +54,11 @@ impl Communicator {
 
         let v: Value = serde_json::from_str(s).unwrap();
 
-        *result =   v["access_token"].to_string();
-        *result = result[1..].to_string();
+        let mut result =   v["access_token"].to_string();
+        result = result[1..].to_string();
         result.pop();
         println!("Ok ! Access token : {}",result.as_str());
+        self.access_token = result;
     }
     
-    pub fn set_access_token(&mut self, access_token : &str) {
-        self.access_token = access_token.to_string();
-    }
 }

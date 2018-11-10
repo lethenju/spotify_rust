@@ -29,7 +29,6 @@ impl Command {
     }
     pub fn refresh(&mut self, _base_64_secret :&str, _refresh_token :&str) {
         let mut access_token = String::new();
-        self.communicator.refresh(_base_64_secret,_refresh_token, &mut access_token);
-        self.communicator.set_access_token(access_token.as_str());
+        self.communicator.refresh(_base_64_secret,_refresh_token);
     }
 }   
