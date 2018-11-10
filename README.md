@@ -5,17 +5,19 @@ The command line tool spotify_cli can control your Spotify playback without havi
 ## Getting Started
 
 Just clone the repository and cargo run !
+It is not usable for now, just a work in progress.
+
 
 ### Prerequisites
 
 Well before you can run there are some prerequisites :
-    - *Rust* 
-    - A *Spotify client id/secret pair*, and a *refresh token*
+- *Rust* 
+- A *Spotify client id/secret pair*, and a *refresh token*
 
 
 ### Installing
 
-TODO
+TODOs
 
 ## Running the tests
 
@@ -23,7 +25,11 @@ TODO
 
 ## Built With
 
-TODO
+External crates :
+- `curl` for sending HTTP requests. 
+- `serde_json` for JSON parsing.
+- `percent-encoding` to encode search queries in percent encoding.
+- `clap` for the command line interpreter
 
 ## Contributing
 
