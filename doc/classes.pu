@@ -6,7 +6,6 @@ class Communicator {
     + init(&self, access_token)
     + perform(&self, url, type, headers, query, body, &result)
     + set_access_token(&self, access_token)
-    + delete(&self)
 }
 
 class Command {
@@ -23,17 +22,12 @@ class EasyAPI {
     + search_and_play_first(&self, type, search)
     + search_and_choose_on_CLI(&self)
 }
-class Rights {
-    + refresh()
-}
 
 class Files {
-    + loadfile()
+    + load_file()
 }
-main --> Rights
-Rights --> Files 
-Rights --> Command
 main --> EasyAPI
+EasyAPI --> Files
 EasyAPI --> Command
 Command --> Communicator
 @enduml
