@@ -12,7 +12,7 @@ pub struct Command {
 
 impl Command {
     pub fn construct() -> Command {
-        let communicator = Communicator::construct("TODO");
+        let communicator = Communicator::construct("NULL");
         return Command {communicator};
     }
     pub fn play(&self, _spotify_id :&str) {
@@ -24,7 +24,12 @@ impl Command {
     pub fn next(&self) {
 
     }
-    pub fn search(&self, _spotify_id :&str, result : &mut String) {
+    pub fn search(&self, _spotify_id :&str, result :&mut String) {
 
     }
-}
+    pub fn refresh(&mut self, _base_64_secret :&str, _refresh_token :&str) {
+        let mut access_token = String::new();
+        self.communicator.refresh(_base_64_secret,_refresh_token, &mut access_token);
+        self.communicator.set_access_token(access_token.as_str());
+    }
+}   

@@ -22,7 +22,11 @@ impl EasyAPI {
     pub fn search_and_choose_on_cli(&self) {
         
     }
-    pub fn refresh(&self) {
-       // files::load_keys(refresh_token: &mut String, base_64_secret: &mut String);
+    pub fn refresh(&mut self) {
+        
+        let mut refresh_token = String::new();
+        let mut base_64_secret = String::new();
+        files::load_keys(&mut refresh_token,&mut base_64_secret);
+        self.command.refresh(base_64_secret.as_str(), refresh_token.as_str());
     }
 }
