@@ -1,0 +1,39 @@
+@startuml
+
+class Communicator {
+    - String access_token
+    - Easy easy_handle
+    + init(&self, access_token)
+    + perform(&self, url, type, headers, query, body, &result)
+    + set_access_token(&self, access_token)
+    + delete(&self)
+}
+
+class Command {
+    - Communicator communicator
+    + refresh(&self, client_id_secret, refresh_token)
+    + play(&self, spotify_id)
+    + pause(&self)
+    + next(&self)
+    + search(&self type, input, &result)
+}
+
+class EasyAPI {
+    - Command command
+    + search_and_play_first(&self, type, search)
+    + search_and_choose_on_CLI(&self)
+}
+class Rights {
+    + refresh()
+}
+
+class Files {
+    + loadfile()
+}
+main --> Rights
+Rights --> Files 
+Rights --> Command
+main --> EasyAPI
+EasyAPI --> Command
+Command --> Communicator
+@enduml
