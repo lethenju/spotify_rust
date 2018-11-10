@@ -59,7 +59,8 @@ impl Communicator {
         result.pop();
         println!("Ok ! Access token : {}",result.as_str());
     }
-    pub fn set_access_token(&self, access_token : &str) {
-
+    
+    pub fn set_access_token(&mut self, access_token : &str) {
+        self.access_token = access_token.to_string();
     }
 }
