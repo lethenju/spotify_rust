@@ -9,13 +9,11 @@ pub use self::easy_api::EasyAPI;
 use std::io;
 use interface::App;
 use termion::event::Key;
-use termion::input::MouseTerminal;
 use termion::raw::IntoRawMode;
-use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
-use tui::layout::{Constraint, Corner, Direction, Layout, Rect};
+use tui::layout::Layout;
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Block, Borders, List, SelectableList, Text, Widget};
+use tui::widgets::{Block, Borders, SelectableList, Widget};
 use tui::Terminal;
 
 use interface::util::event::{Event, Events};
@@ -24,8 +22,6 @@ use interface::util::event::{Event, Events};
 fn main() -> Result<(), failure::Error> {
     // Terminal initialization
     let stdout = io::stdout().into_raw_mode()?;
-    let stdout = MouseTerminal::from(stdout);
-    let stdout = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
     terminal.hide_cursor()?;
@@ -104,7 +100,6 @@ fn main() -> Result<(), failure::Error> {
                 _ => {}
             },
             Event::Tick => {
-                app.advance();
             }
         }
     }

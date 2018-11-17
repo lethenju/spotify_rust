@@ -18,7 +18,7 @@ pub struct Communicator {
 
 impl Communicator {
     pub fn construct( _access_token : &str) -> Communicator {
-        let mut easy_handle = Easy::new(); 
+        let easy_handle = Easy::new(); 
         let mut access_token = _access_token.to_string();
         return Communicator {access_token, easy_handle};
     }
