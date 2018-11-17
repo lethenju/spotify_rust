@@ -8,7 +8,7 @@ extern crate percent_encoding;
 
 mod communicator;
 use self::communicator::Communicator;
-use curl::easy::{Easy, List};
+use self::curl::easy::{Easy, List};
 use self::percent_encoding::{utf8_percent_encode, DEFAULT_ENCODE_SET};
 
 

@@ -8,7 +8,7 @@ extern crate serde_json;
 
 use std::io::Read;
 use self::serde_json::{Value};
-use curl::easy::{Easy, List};
+pub use self::curl::easy::{Easy, List};
 use std::str;
 
 pub struct Communicator {
@@ -85,7 +85,7 @@ impl Communicator {
     * Generate another access token
     */
     pub fn refresh(&mut self, _base64_secret: &str, _refresh_token : &str) {
-        println!("Refreshing access token");
+        //println!("Refreshing access token");
         let mut data = Vec::new();
         {
             self.easy_handle.post(true).unwrap();
@@ -113,7 +113,7 @@ impl Communicator {
         let mut result =   v["access_token"].to_string();
         result = result[1..].to_string();
         result.pop();
-        println!("Ok ! Access token : {}",result.as_str());
+        //println!("Ok ! Access token : {}",result.as_str());
         self.access_token = result;
     }
     pub fn get_access_token(&self) -> &str {
