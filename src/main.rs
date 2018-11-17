@@ -39,8 +39,6 @@ fn main() -> Result<(), failure::Error> {
     let mut easy_api = EasyAPI::construct();
     easy_api.refresh();
                     
-    easy_api.search_and_play_first("playlist", "justice");
-
     loop {
         let size = terminal.size()?;
         if size != app.size {
