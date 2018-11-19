@@ -31,9 +31,22 @@ impl EasyAPI {
         //println!("{}",result); 
 
         self.command.play(result.as_str(), _type)
-
-
     }
+
+    pub fn search(&mut self, _type:&str, _search:&str, final_result :&mut Vec<String>) {
+        let mut result = String::new();
+        self.command.search(_search, _type,&mut result);
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+        //println!("{}",result.as_str());
+        // work for playlist, we should verify the JSON out for other types to get the right thing
+        for x in 0..10 {
+            result =   v["playlists"]["items"][x]["name"].to_string(); // just getting the first result here
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'        
+            final_result.push(result);
+        }
+    }
+    
     pub fn refresh(&mut self) {
         //println!("refreshing");
         let mut refresh_token = String::new();
