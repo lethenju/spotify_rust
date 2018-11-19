@@ -39,7 +39,8 @@ impl EasyAPI {
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         //println!("{}",result.as_str());
         // work for playlist, we should verify the JSON out for other types to get the right thing
-        for x in 0..10 {
+        let size = v["playlists"]["items"].as_array().unwrap().len();
+        for x in 0..size {
             result =   v["playlists"]["items"][x]["name"].to_string(); // just getting the first result here
             result = result[1..].to_string(); // removing last '"'
             result.pop(); // removing first '"'        
