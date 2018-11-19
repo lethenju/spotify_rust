@@ -12,22 +12,41 @@ use tui::layout::{ Rect};
 use tui::style::{Color, Style};
 use tui::Terminal;
 
-use interface::util::event::{Event, Events};
+use interface::util::{Event, Events};
 
 pub struct App<'a> {
     pub size: Rect,
     pub items: Vec<&'a str>,
-    pub  selected: Option<usize>,
+    pub selected: Option<usize>,
 }
 
 impl<'a> App<'a> {
-    pub fn new() -> App<'a> {
+    pub fn new(_items :Vec<&'a str>) -> App<'a> {
         App {
             size: Rect::default(),
-            items: vec![
-                "Justice", "Michel Sardou", "Beethoven", "Michael Jackson", "Johnny Halliday"
-            ],
-            selected: None,
+            items: _items,
+            selected: Some(0),
         }
     }
+    pub fn advance(&mut self) {
+    }
 }
+
+pub struct Tracks<'a> {
+    pub size: Rect,
+    pub items: Vec<&'a str>,
+    pub selected: Option<usize>,
+}
+
+impl<'a> Tracks<'a> {
+    pub fn new() -> Tracks<'a> {
+        Tracks {
+            size: Rect::default(),
+            items: Vec::new(),
+            selected: Some(0),
+        }
+    }
+    pub fn advance(&mut self) {
+    }
+}
+
