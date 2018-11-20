@@ -8,45 +8,62 @@ pub mod util;
 use termion::event::Key;
 use termion::input::MouseTerminal;
 use termion::raw::IntoRawMode;
-use tui::layout::{ Rect};
+use tui::layout::Rect;
 use tui::style::{Color, Style};
 use tui::Terminal;
 
 use interface::util::{Event, Events};
 
-pub struct App<'a> {
+pub struct Albums {
     pub size: Rect,
-    pub items: Vec<&'a str>,
+    pub album_name: Vec<String>,
+    pub album_id: Vec<String>,
     pub selected: Option<usize>,
 }
 
-impl<'a> App<'a> {
-    pub fn new(_items :Vec<&'a str>) -> App<'a> {
-        App {
+impl<'a> Albums {
+    pub fn new(_album_name: Vec<String>, _album_id: Vec<String>) -> Albums {
+        Albums {
             size: Rect::default(),
-            items: _items,
+            album_name: _album_name,
+            album_id: _album_id,
             selected: Some(0),
         }
     }
-    pub fn advance(&mut self) {
+    pub fn add_albums(&mut self, _album_name: &mut Vec<String>, _album_id: &mut Vec<String>) {
+        self.album_name.append(_album_name);
+        self.album_id.append(_album_id);
     }
+
+    pub fn advance(&mut self) {}
 }
 
-pub struct Tracks<'a> {
+pub struct Tracks {
     pub size: Rect,
-    pub items: Vec<&'a str>,
+    pub track_name: Vec<String>,
+    pub track_id: Vec<String>,
     pub selected: Option<usize>,
 }
 
-impl<'a> Tracks<'a> {
-    pub fn new() -> Tracks<'a> {
+impl<'a> Tracks {
+    pub fn new() -> Tracks {
         Tracks {
             size: Rect::default(),
-            items: Vec::new(),
-            selected: Some(0),
+            track_name: Vec::new(),
+            track_id: Vec::new(),
+            selected: None,
         }
     }
-    pub fn advance(&mut self) {
-    }
-}
 
+    pub fn add_tracks(&mut self, _track_name: &mut Vec<String>, _track_id: &mut Vec<String>) {
+        self.track_name.append(_track_name);
+        self.track_id.append(_track_id);
+    }
+    pub fn clear_tracks(&mut self) {
+        //self.items.remove(self.items.len());
+        self.track_name.clear();
+        self.track_id.clear();
+    }
+
+    pub fn advance(&mut self) {}
+}

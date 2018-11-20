@@ -6,9 +6,13 @@ extern crate tui;
 #[allow(dead_code)]
 mod interface;
 
-use interface::{App, Tracks};
+use interface::{Albums, Tracks};
 pub use spotify_cli::EasyAPI;
-use std::io::{self, BufRead};
+use std::io::{self, stdout, BufRead, Read, Write};
+use std::str;
+use std::thread;
+use std::time::Duration;
+use termion::async_stdin;
 use termion::event::Key;
 use termion::input::MouseTerminal;
 use termion::raw::IntoRawMode;
@@ -22,7 +26,7 @@ use tui::Terminal;
 use interface::util::{Event, Events};
 
 fn main() -> Result<(), failure::Error> {
-    let mut search = String::new();
+    /*let mut search = String::new();
     {
         println!("Search for a playlist :");
         let stdin = io::stdin();
@@ -31,35 +35,17 @@ fn main() -> Result<(), failure::Error> {
     }
 
     println!("Ok, lets find {}", search);
-
+*/
     let mut easy_api = EasyAPI::construct();
     easy_api.refresh().unwrap();
 
-    let mut final_results = Vec::new();
-    easy_api.search_playlist(search.as_str(), &mut final_results).unwrap();
-
-    // App
-    let mut items = Vec::<&str>::new();
-    for item in &final_results {
-        items.push(item);
-    }
-
-    // Terminal initialization
-    let stdout = io::stdout().into_raw_mode()?;
-    let stdout = MouseTerminal::from(stdout);
-    let stdout = AlternateScreen::from(stdout);
-    let backend = TermionBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?;
-    terminal.hide_cursor()?;
-
-    let events = Events::new();
-    // App
-    let mut app = App::new(items);
-    let mut tracks = Tracks::new();
+    let mut album_names = Vec::new();
+    easy_api.get_my_albums(&mut album_names).unwrap();
+    let mut album_ids = Vec::new();
+    easy_api.get_my_albums_ids(&mut album_ids).unwrap();
 
     let mut current_artist = String::new();
     let mut current_track = String::new();
-
     if easy_api
         .get_currently_playing_artist(&mut current_artist)
         .is_err()
@@ -72,20 +58,36 @@ fn main() -> Result<(), failure::Error> {
     {
         current_track = "None".to_string();
     }
-    
+
+    // Terminal initialization
+    let stdout = io::stdout().into_raw_mode()?;
+    let stdout = MouseTerminal::from(stdout);
+    let stdout = AlternateScreen::from(stdout);
+    let backend = TermionBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
+    terminal.hide_cursor()?;
+
+    let events = Events::new();
+    // App
+    let mut albums = Albums::new(album_names, album_ids);
+    let mut tracks = Tracks::new();
+
+    let mut track_names = Vec::new();
+    let mut track_items = Vec::<Vec<&str>>::new();
+    let mut track_ids = Vec::new();
 
     loop {
         let size = terminal.size()?;
-        if size != app.size {
+        if size != albums.size {
             terminal.resize(size)?;
-            app.size = size;
+            albums.size = size;
         }
 
         terminal.draw(|mut f| {
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
-                .split(app.size);
+                .split(size);
 
             let style = Style::default().fg(Color::Green).bg(Color::DarkGray);
 
@@ -95,9 +97,9 @@ fn main() -> Result<(), failure::Error> {
                 .split(chunks[0]);
 
             SelectableList::default()
-                .block(Block::default().borders(Borders::ALL).title("Playlists"))
-                .items(&app.items)
-                .select(app.selected)
+                .block(Block::default().borders(Borders::ALL).title("Albums"))
+                .items(&albums.album_name)
+                .select(albums.selected)
                 .style(style)
                 .highlight_style(style.fg(Color::White).modifier(Modifier::Bold))
                 .highlight_symbol(">")
@@ -105,7 +107,7 @@ fn main() -> Result<(), failure::Error> {
 
             SelectableList::default()
                 .block(Block::default().borders(Borders::ALL).title("Tracks"))
-                .items(&tracks.items)
+                .items(&tracks.track_name)
                 .select(tracks.selected)
                 .style(style)
                 .highlight_style(style.fg(Color::White).modifier(Modifier::Bold))
@@ -136,42 +138,79 @@ fn main() -> Result<(), failure::Error> {
                     break;
                 }
                 Key::Left => {
-                    app.selected = None;
+                    tracks.selected = None;
+                    albums.selected = Some(0);
                 }
                 Key::Down => {
-                    app.selected = if let Some(selected) = app.selected {
-                        if selected >= app.items.len() - 1 {
+                    albums.selected = if let Some(selected) = albums.selected {
+                        if selected >= albums.album_name.len() - 1 {
                             Some(0)
                         } else {
                             Some(selected + 1)
                         }
                     } else {
-                        Some(0)
+                        None
+                    };
+                    tracks.selected = if let Some(selected) = tracks.selected {
+                        if selected >= tracks.track_name.len() - 1 {
+                            Some(0)
+                        } else {
+                            Some(selected + 1)
+                        }
+                    } else {
+                        None
                     }
                 }
                 Key::Up => {
-                    app.selected = if let Some(selected) = app.selected {
+                    albums.selected = if let Some(selected) = albums.selected {
                         if selected > 0 {
                             Some(selected - 1)
                         } else {
-                            Some(app.items.len() - 1)
+                            Some(albums.album_name.len() - 1)
                         }
                     } else {
-                        Some(0)
+                        None
+                    };
+
+                    tracks.selected = if let Some(selected) = tracks.selected {
+                        if selected > 0 {
+                            Some(selected - 1)
+                        } else {
+                            Some(tracks.track_name.len() - 1)
+                        }
+                    } else {
+                        None
                     }
                 }
                 Key::Right => {
-                    app.selected = if let Some(selected) = app.selected {
-                        easy_api.search_and_play_first("playlist", app.items[selected]).unwrap();
+                    albums.selected = if let Some(selected) = albums.selected {
+                        easy_api
+                            .get_tracks_from_album(&albums.album_id[selected], &mut track_names)
+                            .unwrap();
+
+                        easy_api
+                            .get_tracks_id_from_album(&albums.album_id[selected], &mut track_ids)
+                            .unwrap();
+
+                        tracks.clear_tracks();
+                        tracks.add_tracks(&mut track_names, &mut track_ids);
+                        albums.selected = None;
+                        tracks.selected = Some(0);
                         Some(selected)
                     } else {
-                        Some(0)
+                        None
+                    };
+                    albums.selected = None;
+                    tracks.selected = if let Some(selected) = tracks.selected {
+                        Some(selected)
+                    } else {
+                        Some(1)
                     }
                 }
                 _ => {}
             },
             Event::Tick => {
-                app.advance();
+                albums.advance();
 
                 if easy_api
                     .get_currently_playing_artist(&mut current_artist)
@@ -185,7 +224,6 @@ fn main() -> Result<(), failure::Error> {
                 {
                     current_track = "None".to_string();
                 }
-                
             }
         }
     }
