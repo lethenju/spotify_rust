@@ -1,13 +1,13 @@
 extern crate failure;
+extern crate spotify_cli;
 extern crate termion;
 extern crate tui;
-extern crate spotify_cli;
 
 #[allow(dead_code)]
 mod interface;
 
-pub use spotify_cli::EasyAPI;
 use interface::{App, Tracks};
+pub use spotify_cli::EasyAPI;
 use std::io::{self, BufRead};
 use termion::event::Key;
 use termion::input::MouseTerminal;
@@ -59,6 +59,21 @@ fn main() -> Result<(), failure::Error> {
 
     let mut current_artist = String::new();
     let mut current_track = String::new();
+
+    if easy_api
+        .get_currently_playing_artist(&mut current_artist)
+        .is_err()
+    {
+        current_artist = "None".to_string();
+    }
+    if easy_api
+        .get_currently_playing_track(&mut current_track)
+        .is_err()
+    {
+        current_track = "None".to_string();
+    }
+    
+
     loop {
         let size = terminal.size()?;
         if size != app.size {
@@ -96,7 +111,6 @@ fn main() -> Result<(), failure::Error> {
                 .highlight_style(style.fg(Color::White).modifier(Modifier::Bold))
                 .highlight_symbol(">")
                 .render(&mut f, chunks_middle[1]);
-
 
             let text = [
                 Text::styled(
@@ -159,8 +173,19 @@ fn main() -> Result<(), failure::Error> {
             Event::Tick => {
                 app.advance();
 
-                easy_api.get_currently_playing_artist(&mut current_artist);
-                easy_api.get_currently_playing_track(&mut current_track);
+                if easy_api
+                    .get_currently_playing_artist(&mut current_artist)
+                    .is_err()
+                {
+                    current_artist = "None".to_string();
+                }
+                if easy_api
+                    .get_currently_playing_track(&mut current_track)
+                    .is_err()
+                {
+                    current_track = "None".to_string();
+                }
+                
             }
         }
     }
