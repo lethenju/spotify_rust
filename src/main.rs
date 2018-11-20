@@ -183,6 +183,15 @@ fn main() -> Result<(), failure::Error> {
                     }
                 }
                 Key::Right => {
+                    tracks.selected = if let Some(selected) = tracks.selected {
+                        easy_api
+                            .play_track_from_id(&tracks.track_id[selected])
+                            .unwrap();
+                        Some(selected)
+                    } else {
+                        Some(1)
+                    };
+
                     albums.selected = if let Some(selected) = albums.selected {
                         easy_api
                             .get_tracks_from_album(&albums.album_id[selected], &mut track_names)
@@ -196,17 +205,14 @@ fn main() -> Result<(), failure::Error> {
                         tracks.add_tracks(&mut track_names, &mut track_ids);
                         albums.selected = None;
                         tracks.selected = Some(0);
+
                         Some(selected)
                     } else {
                         None
                     };
-                    albums.selected = None;
-                    tracks.selected = if let Some(selected) = tracks.selected {
-                        Some(selected)
-                    } else {
-                        Some(1)
-                    }
+                    albums.selected = None
                 }
+
                 _ => {}
             },
             Event::Tick => {
