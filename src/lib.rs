@@ -21,6 +21,9 @@ impl EasyAPI {
         let command = Command::construct();
         return EasyAPI { command };
     }
+    /// Searches for a playlist and play the first item 
+    /// found with that name. Works only with playlist now..
+    /// TODO extend from playlist mode to any mode..
     pub fn search_and_play_first(
         &mut self,
         _type: &str,
@@ -38,15 +41,16 @@ impl EasyAPI {
         self.command.play(result.as_str(), _type);
         Ok(())
     }
-
-    pub fn search(
+    /// Searches for playlist with the "search" parameter str.
+    ///  results are added to the final_result String vector in
+    ///  parameter.
+    pub fn search_playlist(
         &mut self,
-        _type: &str,
         _search: &str,
         final_result: &mut Vec<String>,
     ) -> Result<(), failure::Error> {
         let mut result = String::new();
-        self.command.search(_search, _type, &mut result);
+        self.command.search(_search, "playlist", &mut result);
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["playlists"]["items"].as_array().unwrap().len();
@@ -58,6 +62,37 @@ impl EasyAPI {
         }
         Ok(())
     }
+
+    /// TODO
+    /// Not implemented yet
+    pub fn search_album(
+        &mut self,
+        _search: &str,
+        final_result: &mut Vec<String>,
+    ) -> Result<(), failure::Error> {
+        Ok(())
+    }
+    /// TODO
+    /// Not implemented yet
+    pub fn search_track(
+        &mut self,
+        _search: &str,
+        final_result: &mut Vec<String>,
+    ) -> Result<(), failure::Error> {
+        Ok(())
+    }
+    /// TODO
+    /// Not implemented yet
+    pub fn search_artist(
+        &mut self,
+        _search: &str,
+        final_result: &mut Vec<String>,
+    ) -> Result<(), failure::Error> {
+        Ok(())
+    }
+
+    /// Gets the currently playing artist on the final_result argument
+    /// final_result setted to "" if no track is playing
     pub fn get_currently_playing_artist(
         &mut self,
         final_result: &mut String,
@@ -65,7 +100,7 @@ impl EasyAPI {
         let mut result = String::new();
         self.command.get_currently_playing(&mut result);
         if result.len() == 0 {
-            *final_result = "no track".to_string();
+            *final_result = "".to_string();
         } else {
             let v: Value = serde_json::from_str(result.as_str())
                 .unwrap_or(Err(()))
@@ -78,6 +113,8 @@ impl EasyAPI {
         Ok(())
     }
 
+    /// Gets the currently playing track on the final_result argument
+    /// final_result setted to "" if no track is playing
     pub fn get_currently_playing_track(
         &mut self,
         final_result: &mut String,
@@ -85,7 +122,7 @@ impl EasyAPI {
         let mut result = String::new();
         self.command.get_currently_playing(&mut result);
         if result.len() == 0 {
-            *final_result = "no track".to_string();
+            *final_result = "".to_string();
         } else {
             let v: Value = serde_json::from_str(result.as_str()).unwrap();
             result = v["item"]["name"].to_string();
@@ -95,6 +132,8 @@ impl EasyAPI {
         }
         Ok(())
     }
+
+    /// Refreshes the access token by requesting a new one
     pub fn refresh(&mut self) -> Result<(), failure::Error> {
         let mut refresh_token = String::new();
         let mut base_64_secret = String::new();

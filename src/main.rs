@@ -33,10 +33,10 @@ fn main() -> Result<(), failure::Error> {
     println!("Ok, lets find {}", search);
 
     let mut easy_api = EasyAPI::construct();
-    easy_api.refresh();
+    easy_api.refresh().unwrap();
 
     let mut final_results = Vec::new();
-    easy_api.search("playlist", search.as_str(), &mut final_results);
+    easy_api.search_playlist(search.as_str(), &mut final_results).unwrap();
 
     // App
     let mut items = Vec::<&str>::new();
@@ -162,7 +162,7 @@ fn main() -> Result<(), failure::Error> {
                 }
                 Key::Right => {
                     app.selected = if let Some(selected) = app.selected {
-                        easy_api.search_and_play_first("playlist", app.items[selected]);
+                        easy_api.search_and_play_first("playlist", app.items[selected]).unwrap();
                         Some(selected)
                     } else {
                         Some(0)
