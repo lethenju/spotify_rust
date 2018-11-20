@@ -14,20 +14,27 @@ class Command {
     + play(&self, spotify_id)
     + pause(&self)
     + next(&self)
-    + search(&self type, input, &result)
+    + search(&self, type, input, &result)
+    + get_currently_playing(&self, &result)
 }
 
-class EasyAPI {
+class lib {
     - Command command
-    + search_and_play_first(&self, type, search)
-    + search_and_choose_on_CLI(&self)
+    + search_and_play_first(type : &str, search : &str) -> Result
+    + search_playlist(search : &str, result : &mut Vec<String>) -> Result
+    + search_album(search : &str, result : &mut Vec<String>) -> Result
+    + search_track(search : &str, result : &mut Vec<String>) -> Result
+    + search_artist(search : &str, result : &mut Vec<String>) -> Result
+    + get_currently_playing_artist(result : &mut String) -> Result
+    + get_currently_playing_track(result : &mut String)
+    + refresh() -> Result
 }
 
 class Files {
     + load_file()
 }
-main --> EasyAPI
-EasyAPI --> Files
-EasyAPI --> Command
+main --> lib
+lib --> Files
+lib --> Command
 Command --> Communicator
 @enduml
