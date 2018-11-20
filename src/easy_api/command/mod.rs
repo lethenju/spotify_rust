@@ -52,6 +52,16 @@ impl Command {
                 list_headers,"GET", &mut *result);
         
     }
+
+    pub fn get_currently_playing(&mut self, result : &mut String) {
+        let mut list_headers = List::new();
+        let _auth = format!("{}{}", "Authorization: Bearer ", self.communicator.get_access_token());
+        list_headers.append(&_auth).unwrap();
+
+        self.communicator.perform("https://api.spotify.com/v1/me/player/currently-playing", "", "" ,
+                list_headers,"GET", &mut *result);
+
+    }
     pub fn refresh(&mut self, _base_64_secret :&str, _refresh_token :&str) {
         let mut access_token = String::new();
         self.communicator.refresh(_base_64_secret,_refresh_token);
