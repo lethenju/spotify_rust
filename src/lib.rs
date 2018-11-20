@@ -21,7 +21,7 @@ impl EasyAPI {
         let command = Command::construct();
         return EasyAPI { command };
     }
-    /// Searches for a playlist and play the first item 
+    /// Searches for a playlist and play the first item
     /// found with that name. Works only with playlist now..
     /// TODO extend from playlist mode to any mode..
     pub fn search_and_play_first(
@@ -56,6 +56,78 @@ impl EasyAPI {
         let size = v["playlists"]["items"].as_array().unwrap().len();
         for x in 0..size {
             result = v["playlists"]["items"][x]["name"].to_string(); // just getting the first result here
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'
+            final_result.push(result);
+        }
+        Ok(())
+    }
+
+    ///  Get the current users album
+    pub fn get_my_albums(&mut self, final_result: &mut Vec<String>) -> Result<(), failure::Error> {
+        let mut result = String::new();
+        self.command.get_my_albums(&mut result);
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+        // work for playlist, we should verify the JSON out for other types to get the right thing
+        let size = v["items"].as_array().unwrap().len();
+        for x in 0..size {
+            result = v["items"][x]["album"]["name"].to_string(); // just getting the first result here
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'
+            final_result.push(result);
+        }
+        Ok(())
+    }
+    ///  Get the current users album ids
+    pub fn get_my_albums_ids(
+        &mut self,
+        final_result: &mut Vec<String>,
+    ) -> Result<(), failure::Error> {
+        let mut result = String::new();
+        self.command.get_my_albums(&mut result);
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+        // work for playlist, we should verify the JSON out for other types to get the right thing
+        let size = v["items"].as_array().unwrap().len();
+        for x in 0..size {
+            result = v["items"][x]["album"]["id"].to_string(); // just getting the first result here
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'
+            final_result.push(result);
+        }
+        Ok(())
+    }
+    ///  Get the track names from a given album id
+    pub fn get_tracks_from_album(
+        &mut self,
+        id: &str,
+        final_result: &mut Vec<String>,
+    ) -> Result<(), failure::Error> {
+        let mut result = String::new();
+        self.command.get_tracks_from_album(id, &mut result);
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+        // work for playlist, we should verify the JSON out for other types to get the right thing
+        let size = v["items"].as_array().unwrap().len();
+        for x in 0..size {
+            result = v["items"][x]["name"].to_string(); // just getting the first result here
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'
+            final_result.push(result);
+        }
+        Ok(())
+    }
+    ///  Get the tracks id from a given  album id
+    pub fn get_tracks_id_from_album(
+        &mut self,
+        id: &str,
+        final_result: &mut Vec<String>,
+    ) -> Result<(), failure::Error> {
+        let mut result = String::new();
+        self.command.get_tracks_from_album(id, &mut result);
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+        // work for playlist, we should verify the JSON out for other types to get the right thing
+        let size = v["items"].as_array().unwrap().len();
+        for x in 0..size {
+            result = v["items"][x]["id"].to_string(); // just getting the first result here
             result = result[1..].to_string(); // removing last '"'
             result.pop(); // removing first '"'
             final_result.push(result);
@@ -102,9 +174,7 @@ impl EasyAPI {
         if result.len() == 0 {
             *final_result = "".to_string();
         } else {
-            let v: Value = serde_json::from_str(result.as_str())
-                .unwrap_or(Err(()))
-                .unwrap();
+            let v: Value = serde_json::from_str(result.as_str()).unwrap();
             result = v["item"]["artists"][0]["name"].to_string();
             result = result[1..].to_string(); // removing last '"'
             result.pop(); // removing first '"'
