@@ -1,12 +1,12 @@
 extern crate failure;
 extern crate termion;
 extern crate tui;
+extern crate spotify_cli;
 
 #[allow(dead_code)]
-mod easy_api;
 mod interface;
 
-pub use self::easy_api::EasyAPI;
+pub use spotify_cli::EasyAPI;
 use interface::{App, Tracks};
 use std::io::{self, BufRead};
 use termion::event::Key;
@@ -55,8 +55,10 @@ fn main() -> Result<(), failure::Error> {
     let events = Events::new();
     // App
     let mut app = App::new(items);
-    let mut tracks  = Tracks::new();
+    let mut tracks = Tracks::new();
 
+    let mut current_artist = String::new();
+    let mut current_track = String::new();
     loop {
         let size = terminal.size()?;
         if size != app.size {
@@ -78,36 +80,33 @@ fn main() -> Result<(), failure::Error> {
                 .split(chunks[0]);
 
             SelectableList::default()
-                .block(
-                    Block::default()
-                        .borders(Borders::ALL)
-                        .title("Playlists"),
-                ).items(&app.items)
+                .block(Block::default().borders(Borders::ALL).title("Playlists"))
+                .items(&app.items)
                 .select(app.selected)
                 .style(style)
                 .highlight_style(style.fg(Color::White).modifier(Modifier::Bold))
                 .highlight_symbol(">")
                 .render(&mut f, chunks_middle[0]);
 
-
             SelectableList::default()
-                .block(
-                    Block::default()
-                        .borders(Borders::ALL)
-                        .title("Tracks"),
-                ).items(&tracks.items)
+                .block(Block::default().borders(Borders::ALL).title("Tracks"))
+                .items(&tracks.items)
                 .select(tracks.selected)
                 .style(style)
                 .highlight_style(style.fg(Color::White).modifier(Modifier::Bold))
                 .highlight_symbol(">")
                 .render(&mut f, chunks_middle[1]);
 
+
             let text = [
                 Text::styled(
-                    "Artist : \n",
+                    format!("Artist : {}\n", &current_artist.as_str()),
                     Style::default().fg(Color::White).modifier(Modifier::Bold),
                 ),
-                Text::styled("Track :\n", Style::default().fg(Color::White)),
+                Text::styled(
+                    format!("Track : {}", &current_track.as_str()),
+                    Style::default().fg(Color::White),
+                ),
             ];
             Paragraph::new(text.iter())
                 .block(Block::default().title("Now Playing").borders(Borders::ALL))
@@ -159,6 +158,9 @@ fn main() -> Result<(), failure::Error> {
             },
             Event::Tick => {
                 app.advance();
+
+                easy_api.get_currently_playing_artist(&mut current_artist);
+                easy_api.get_currently_playing_track(&mut current_track);
             }
         }
     }
