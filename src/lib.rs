@@ -202,6 +202,11 @@ impl EasyAPI {
         }
         Ok(())
     }
+    /// Plays a track given its ID
+    pub fn play_track_from_id(&mut self, id: &str) -> Result<(), failure::Error> {
+        self.command.play(id, "track");
+        Ok(())
+    }
 
     /// Refreshes the access token by requesting a new one
     pub fn refresh(&mut self) -> Result<(), failure::Error> {

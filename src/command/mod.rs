@@ -21,7 +21,12 @@ impl Command {
         return Command { communicator };
     }
     pub fn play(&mut self, _spotify_id: &str, _type: &str) {
-        let _context_uri = format!("{{\"context_uri\":\"spotify:{}:{}\"}}", _type, _spotify_id);
+        let mut body_params = String::new();
+        if _type != "track" {
+            body_params = format!("{{\"context_uri\":\"spotify:{}:{}\"}}", _type, _spotify_id).to_string();
+        } else {
+            body_params = format!("{{\"uris\": [\"spotify:track:{}\"]}}", _spotify_id).to_string();
+        }
         let mut list_headers = List::new();
         let _auth = format!(
             "{}{}",
@@ -38,7 +43,7 @@ impl Command {
         self.communicator.perform(
             "https://api.spotify.com/v1/me/player/play",
             "",
-            &_context_uri,
+            &body_params.as_str(),
             list_headers,
             "PUT",
             &mut result,
