@@ -16,6 +16,14 @@ pub struct EasyAPI {
     command: Command,
 }
 
+#[derive(Debug, Clone)]
+pub struct Track {
+    pub name: String,
+    pub id: String,
+}
+pub struct Album {}
+pub struct Artist {}
+pub struct Playlist {}
 impl EasyAPI {
     pub fn construct() -> EasyAPI {
         let command = Command::construct();
@@ -99,42 +107,28 @@ impl EasyAPI {
     ///  Get the track names from a given album id
     pub fn get_tracks_from_album(
         &mut self,
-        id: &str,
-        final_result: &mut Vec<String>,
+        id_album: &str,
+        final_result: &mut Vec<Track>,
     ) -> Result<(), failure::Error> {
+        let mut track_name = String::new();
+        let mut track_id = String::new();
         let mut result = String::new();
-        self.command.get_tracks_from_album(id, &mut result);
+        self.command.get_tracks_from_album(id_album, &mut result);
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
         for x in 0..size {
-            result = v["items"][x]["name"].to_string(); // just getting the first result here
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
-            final_result.push(result);
-        }
-        Ok(())
-    }
-    ///  Get the tracks id from a given  album id
-    pub fn get_tracks_id_from_album(
-        &mut self,
-        id: &str,
-        final_result: &mut Vec<String>,
-    ) -> Result<(), failure::Error> {
-        let mut result = String::new();
-        self.command.get_tracks_from_album(id, &mut result);
-        let v: Value = serde_json::from_str(result.as_str()).unwrap();
-        // work for playlist, we should verify the JSON out for other types to get the right thing
-        let size = v["items"].as_array().unwrap().len();
-        for x in 0..size {
-            result = v["items"][x]["id"].to_string(); // just getting the first result here
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
-            final_result.push(result);
-        }
-        Ok(())
-    }
+            track_name = v["items"][x]["name"].to_string(); // just getting the first result here
+            track_name = track_name[1..].to_string(); // removing last '"'
+            track_name.pop(); // removing first '"'
 
+            track_id = v["items"][x]["id"].to_string(); // just getting the first result here
+            track_id = track_id[1..].to_string(); // removing last '"'
+            track_id.pop(); // removing first '"'
+            final_result.push(Track { name: track_name, id: track_id });
+        }
+        Ok(())
+    }
     /// TODO
     /// Not implemented yet
     pub fn search_album(

@@ -2,17 +2,10 @@
     @Author Julien LE THENO
     @mod Tui : handles the Text user interface
 */
+extern crate spotify_cli;
 
-use std::io;
 pub mod util;
-use termion::event::Key;
-use termion::input::MouseTerminal;
-use termion::raw::IntoRawMode;
 use tui::layout::Rect;
-use tui::style::{Color, Style};
-use tui::Terminal;
-
-use interface::util::{Event, Events};
 
 pub struct Albums {
     pub size: Rect,
@@ -40,29 +33,24 @@ impl<'a> Albums {
 
 pub struct Tracks {
     pub size: Rect,
-    pub track_name: Vec<String>,
-    pub track_id: Vec<String>,
+    pub tracks: Vec<spotify_cli::Track>,
     pub selected: Option<usize>,
 }
-
 impl<'a> Tracks {
     pub fn new() -> Tracks {
         Tracks {
             size: Rect::default(),
-            track_name: Vec::new(),
-            track_id: Vec::new(),
+            tracks: Vec::new(),
             selected: None,
         }
     }
 
-    pub fn add_tracks(&mut self, _track_name: &mut Vec<String>, _track_id: &mut Vec<String>) {
-        self.track_name.append(_track_name);
-        self.track_id.append(_track_id);
+    pub fn add_tracks(&mut self, _tracks: &mut Vec<spotify_cli::Track>) {
+        self.tracks.append(_tracks);
     }
     pub fn clear_tracks(&mut self) {
         //self.items.remove(self.items.len());
-        self.track_name.clear();
-        self.track_id.clear();
+        self.tracks.clear();
     }
 
     pub fn advance(&mut self) {}

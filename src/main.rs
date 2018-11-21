@@ -69,18 +69,14 @@ fn main() -> Result<(), failure::Error> {
 
     let events = Events::new();
     // App
-    let mut albums = Albums::new(album_names, album_ids);
-    let mut tracks = Tracks::new();
-
-    let mut track_names = Vec::new();
-    let mut track_items = Vec::<Vec<&str>>::new();
-    let mut track_ids = Vec::new();
-
+    let mut albums_pane = Albums::new(album_names, album_ids);
+    let mut tracks_pane = Tracks::new();
+    let mut tracks = Vec::new();
     loop {
         let size = terminal.size()?;
-        if size != albums.size {
+        if size != albums_pane.size {
             terminal.resize(size)?;
-            albums.size = size;
+            albums_pane.size = size;
         }
 
         terminal.draw(|mut f| {
@@ -98,17 +94,20 @@ fn main() -> Result<(), failure::Error> {
 
             SelectableList::default()
                 .block(Block::default().borders(Borders::ALL).title("Albums"))
-                .items(&albums.album_name)
-                .select(albums.selected)
+                .items(&albums_pane.album_name)
+                .select(albums_pane.selected)
                 .style(style)
                 .highlight_style(style.fg(Color::White).modifier(Modifier::Bold))
                 .highlight_symbol(">")
                 .render(&mut f, chunks_middle[0]);
-
+            tracks.clear();
+            for track in tracks_pane.tracks.clone(){
+                tracks.push(track.name);
+            }
             SelectableList::default()
                 .block(Block::default().borders(Borders::ALL).title("Tracks"))
-                .items(&tracks.track_name)
-                .select(tracks.selected)
+                .items(&tracks)
+                .select(tracks_pane.selected)
                 .style(style)
                 .highlight_style(style.fg(Color::White).modifier(Modifier::Bold))
                 .highlight_symbol(">")
@@ -138,12 +137,12 @@ fn main() -> Result<(), failure::Error> {
                     break;
                 }
                 Key::Left => {
-                    tracks.selected = None;
-                    albums.selected = Some(0);
+                    tracks_pane.selected = None;
+                    albums_pane.selected = Some(0);
                 }
                 Key::Down => {
-                    albums.selected = if let Some(selected) = albums.selected {
-                        if selected >= albums.album_name.len() - 1 {
+                    albums_pane.selected = if let Some(selected) = albums_pane.selected {
+                        if selected >= albums_pane.album_name.len() - 1 {
                             Some(0)
                         } else {
                             Some(selected + 1)
@@ -151,8 +150,8 @@ fn main() -> Result<(), failure::Error> {
                     } else {
                         None
                     };
-                    tracks.selected = if let Some(selected) = tracks.selected {
-                        if selected >= tracks.track_name.len() - 1 {
+                    tracks_pane.selected = if let Some(selected) = tracks_pane.selected {
+                        if selected >= tracks_pane.tracks.len() - 1 {
                             Some(0)
                         } else {
                             Some(selected + 1)
@@ -160,64 +159,60 @@ fn main() -> Result<(), failure::Error> {
                     } else {
                         None
                     }
+
+                    
                 }
                 Key::Up => {
-                    albums.selected = if let Some(selected) = albums.selected {
+                    albums_pane.selected = if let Some(selected) = albums_pane.selected {
                         if selected > 0 {
                             Some(selected - 1)
                         } else {
-                            Some(albums.album_name.len() - 1)
+                            Some(albums_pane.album_name.len() - 1)
                         }
                     } else {
                         None
                     };
 
-                    tracks.selected = if let Some(selected) = tracks.selected {
+                    tracks_pane.selected = if let Some(selected) = tracks_pane.selected {
                         if selected > 0 {
                             Some(selected - 1)
                         } else {
-                            Some(tracks.track_name.len() - 1)
+                            Some(tracks_pane.tracks.len() - 1)
                         }
                     } else {
                         None
                     }
                 }
                 Key::Right => {
-                    tracks.selected = if let Some(selected) = tracks.selected {
+                    tracks_pane.selected = if let Some(selected) = tracks_pane.selected {
                         easy_api
-                            .play_track_from_id(&tracks.track_id[selected])
+                            .play_track_from_id(&tracks_pane.tracks[selected].id)
                             .unwrap();
                         Some(selected)
                     } else {
                         Some(1)
                     };
 
-                    albums.selected = if let Some(selected) = albums.selected {
+                    albums_pane.selected = if let Some(selected) = albums_pane.selected {
+                        let mut tracks_added = Vec::new();
                         easy_api
-                            .get_tracks_from_album(&albums.album_id[selected], &mut track_names)
+                            .get_tracks_from_album(&albums_pane.album_id[selected], &mut tracks_added)
                             .unwrap();
 
-                        easy_api
-                            .get_tracks_id_from_album(&albums.album_id[selected], &mut track_ids)
-                            .unwrap();
-
-                        tracks.clear_tracks();
-                        tracks.add_tracks(&mut track_names, &mut track_ids);
-                        albums.selected = None;
-                        tracks.selected = Some(0);
-
-                        Some(selected)
+                        tracks_pane.clear_tracks();
+                        tracks_pane.add_tracks(&mut tracks_added);
+                        tracks_pane.selected = Some(0);
+                        None
                     } else {
                         None
                     };
-                    albums.selected = None
+                    albums_pane.selected = None
                 }
 
                 _ => {}
             },
             Event::Tick => {
-                albums.advance();
-
+                
                 if easy_api
                     .get_currently_playing_artist(&mut current_artist)
                     .is_err()
