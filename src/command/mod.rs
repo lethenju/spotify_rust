@@ -21,12 +21,10 @@ impl Command {
         return Command { communicator };
     }
     pub fn play(&mut self, _spotify_id: &str, _type: &str) {
-        let mut body_params = String::new();
-        if _type != "track" {
-            body_params = format!("{{\"context_uri\":\"spotify:{}:{}\"}}", _type, _spotify_id).to_string();
-        } else {
+        let mut body_params = format!("{{\"context_uri\":\"spotify:{}:{}\"}}", _type, _spotify_id).to_string();
+        if _type == "track" {
             body_params = format!("{{\"uris\": [\"spotify:track:{}\"]}}", _spotify_id).to_string();
-        }
+        } 
         let mut list_headers = List::new();
         let _auth = format!(
             "{}{}",
@@ -130,7 +128,6 @@ impl Command {
         );
     }
     pub fn refresh(&mut self, _base_64_secret: &str, _refresh_token: &str) {
-        let mut access_token = String::new();
         self.communicator.refresh(_base_64_secret, _refresh_token);
     }
 }
