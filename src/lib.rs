@@ -78,8 +78,15 @@ impl EasyAPI {
 
     ///  Get the current users album
     pub fn get_my_albums(&mut self, final_result: &mut Vec<Album>) -> Result<(), failure::Error> {
+        for i in 0..5 {
+            self.get_my_albums_chunk(i*50,final_result);
+        }
+        Ok(())
+    }
+
+    fn get_my_albums_chunk(&mut self, offset: u16, final_result: &mut Vec<Album>) {
         let mut result = String::new();
-        self.command.get_my_albums(&mut result);
+        self.command.get_my_albums(offset, &mut result);
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
@@ -95,8 +102,8 @@ impl EasyAPI {
 
             final_result.push(Album { name: album_name, id: album_id});
         }
-        Ok(())
     }
+
     ///  Get the track names from a given album id
     pub fn get_tracks_from_album(
         &mut self,
