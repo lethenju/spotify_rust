@@ -8,19 +8,15 @@ mod interface;
 
 use interface::{Albums, Tracks};
 pub use spotify_cli::EasyAPI;
-use std::io::{self, stdout, BufRead, Read, Write};
-use std::str;
-use std::thread;
-use std::time::Duration;
-use termion::async_stdin;
+use std::io::{self};
 use termion::event::Key;
 use termion::input::MouseTerminal;
 use termion::raw::IntoRawMode;
 use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
-use tui::layout::{Alignment, Constraint, Corner, Direction, Layout, Rect};
+use tui::layout::{Alignment, Constraint, Direction, Layout};
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Block, Borders, List, Paragraph, SelectableList, Text, Widget};
+use tui::widgets::{Block, Borders, Paragraph, SelectableList, Text, Widget};
 use tui::Terminal;
 
 use interface::util::{Event, Events};
