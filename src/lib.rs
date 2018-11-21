@@ -76,15 +76,15 @@ impl EasyAPI {
         Ok(())
     }
 
-    ///  Get the current users album
+    ///  Get all the current user's albums
     pub fn get_my_albums(&mut self, final_result: &mut Vec<Album>) -> Result<(), failure::Error> {
-        for i in 0..5 {
+        for i in 0..5 { // SUPER dirty -> TODO get number of album to know how many chunks to get. 
             self.get_my_albums_chunk(i*50,final_result);
         }
         Ok(())
     }
-
-    fn get_my_albums_chunk(&mut self, offset: u16, final_result: &mut Vec<Album>) {
+    /// Get 50 albums in the user's library with a given offset 
+    pub fn get_my_albums_chunk(&mut self, offset: u16, final_result: &mut Vec<Album>) {
         let mut result = String::new();
         self.command.get_my_albums(offset, &mut result);
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
