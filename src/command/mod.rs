@@ -8,7 +8,7 @@ extern crate percent_encoding;
 
 mod communicator;
 use self::communicator::Communicator;
-use self::curl::easy::{Easy, List};
+use self::curl::easy::{List};
 use self::percent_encoding::{utf8_percent_encode, DEFAULT_ENCODE_SET};
 
 pub struct Command {
@@ -49,8 +49,11 @@ impl Command {
             &mut result,
         );
     }
-    pub fn pause(&self) {}
-    pub fn next(&self) {}
+    pub fn pause(&self) {
+    }
+    pub fn next(&self) {
+
+    }
     pub fn search(&mut self, _name: &str, _type: &str, result: &mut String) {
         let mut list_headers = List::new();
         let _auth = format!(

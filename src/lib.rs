@@ -21,7 +21,11 @@ pub struct Track {
     pub name: String,
     pub id: String,
 }
-pub struct Album {}
+pub struct Album {
+    pub name: String,
+    pub id: String,
+    pub tracks: Vec<Track>
+}
 pub struct Artist {}
 pub struct Playlist {}
 impl EasyAPI {
@@ -34,11 +38,11 @@ impl EasyAPI {
     /// TODO extend from playlist mode to any mode..
     pub fn search_and_play_first(
         &mut self,
-        _type: &str,
-        _search: &str,
+        type_: &str,
+        search: &str,
     ) -> Result<(), failure::Error> {
         let mut result = String::new();
-        self.command.search(_search, _type, &mut result);
+        self.command.search(search, type_, &mut result);
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         // work for playlist, we should verify the JSON out for other types to get the right thing
         result = v["playlists"]["items"][0]["id"].to_string(); // just getting the first result here
@@ -46,7 +50,7 @@ impl EasyAPI {
         result.pop(); // removing first '"'
                       //println!("{}",result);
 
-        self.command.play(result.as_str(), _type);
+        self.command.play(result.as_str(), type_);
         Ok(())
     }
     /// Searches for playlist with the "search" parameter str.
@@ -54,11 +58,11 @@ impl EasyAPI {
     ///  parameter.
     pub fn search_playlist(
         &mut self,
-        _search: &str,
+        search: &str,
         final_result: &mut Vec<String>,
     ) -> Result<(), failure::Error> {
         let mut result = String::new();
-        self.command.search(_search, "playlist", &mut result);
+        self.command.search(search, "playlist", &mut result);
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["playlists"]["items"].as_array().unwrap().len();
@@ -133,8 +137,8 @@ impl EasyAPI {
     /// Not implemented yet
     pub fn search_album(
         &mut self,
-        _search: &str,
-        final_result: &mut Vec<String>,
+        search: &str,
+        final_result: &mut Vec<Album>,
     ) -> Result<(), failure::Error> {
         Ok(())
     }
@@ -142,8 +146,8 @@ impl EasyAPI {
     /// Not implemented yet
     pub fn search_track(
         &mut self,
-        _search: &str,
-        final_result: &mut Vec<String>,
+        search: &str,
+        final_result: &mut Vec<Track>,
     ) -> Result<(), failure::Error> {
         Ok(())
     }
@@ -151,9 +155,25 @@ impl EasyAPI {
     /// Not implemented yet
     pub fn search_artist(
         &mut self,
-        _search: &str,
-        final_result: &mut Vec<String>,
+        search: &str,
+        final_result: &mut Vec<Artist>,
     ) -> Result<(), failure::Error> {
+        Ok(())
+    }
+    /// TODO
+    /// Not implemented yet
+    pub fn pause(
+        &mut self
+    ) -> Result<(), failure::Error> {
+        self.command.pause();
+        Ok(())
+    }
+    /// TODO
+    /// Not implemented yet
+    pub fn next(
+        &mut self
+    ) -> Result<(), failure::Error> {
+        self.command.next();
         Ok(())
     }
 
