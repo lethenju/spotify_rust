@@ -13,7 +13,7 @@ mod tests {
         let mut easy_api = spotify_cli::EasyAPI::construct();
         easy_api.refresh().unwrap();
         let mut my_albums = Vec::new();
-        easy_api.get_my_albums(&mut my_albums);
+        easy_api.get_my_albums(&mut my_albums).unwrap();
         assert!(my_albums.len() > 0, true);
     }
 
