@@ -1,5 +1,5 @@
 extern crate failure;
-extern crate spotify_cli;
+extern crate spotify_rust;
 extern crate termion;
 extern crate tui;
 
@@ -7,7 +7,7 @@ extern crate tui;
 mod interface;
 
 use interface::{Albums, Tracks};
-pub use spotify_cli::EasyAPI;
+pub use spotify_rust::EasyAPI;
 use std::io::{self};
 use termion::event::Key;
 use termion::input::MouseTerminal;

@@ -1,27 +1,30 @@
-# Spotify CLI
+# Spotify Rust
 
-The command line tool spotify_cli can control your Spotify playback without having to use your mouse. 
+Spotify_rust can control your Spotify playback without having to use your mouse. 
+
+spotify-rust is made of two elements :
+- An API for Spotify, controlling playback, searching for tracks, albums or playlists, and much more
+- A client in text user interface, directly in your terminal, to browse your spotify Library and play tracks.
 
 ## Getting Started
 
-Just clone the repository and cargo run !
-It is not usable for now, just a work in progress.
+Just clone the repository and `cargo run` !
+
+Keep in mind before using this that we are in a very early stage, and drastic changes can occur anytime. 
+It is not recommanded to use the API until the beta stage.
 
 
 ### Prerequisites
 
 Well before you can run there are some prerequisites :
-- *Rust* 
+- The *Rust* compiler 
 - A *Spotify client id/secret pair*, and a *refresh token*
 
 
-### Installing
-
-TODOs
-
 ## Running the tests
 
-TODO
+Some integration tests are being developped, the coverage isnt really perfect for now.
+You can run the tests with `cargo test`
 
 ## Built With
 
