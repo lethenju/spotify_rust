@@ -8,7 +8,7 @@ extern crate percent_encoding;
 
 mod communicator;
 use self::communicator::Communicator;
-use self::curl::easy::{List};
+use self::curl::easy::List;
 use self::percent_encoding::{utf8_percent_encode, DEFAULT_ENCODE_SET};
 
 pub struct Command {
@@ -21,10 +21,11 @@ impl Command {
         return Command { communicator };
     }
     pub fn play(&mut self, _spotify_id: &str, _type: &str) {
-        let mut body_params = format!("{{\"context_uri\":\"spotify:{}:{}\"}}", _type, _spotify_id).to_string();
+        let mut body_params =
+            format!("{{\"context_uri\":\"spotify:{}:{}\"}}", _type, _spotify_id).to_string();
         if _type == "track" {
             body_params = format!("{{\"uris\": [\"spotify:track:{}\"]}}", _spotify_id).to_string();
-        } 
+        }
         let mut list_headers = List::new();
         let _auth = format!(
             "{}{}",
@@ -47,11 +48,8 @@ impl Command {
             &mut result,
         );
     }
-    pub fn pause(&self) {
-    }
-    pub fn next(&self) {
-
-    }
+    pub fn pause(&self) {}
+    pub fn next(&self) {}
     pub fn search(&mut self, _name: &str, _type: &str, result: &mut String) {
         let mut list_headers = List::new();
         let _auth = format!(
@@ -72,7 +70,7 @@ impl Command {
             &mut *result,
         );
     }
-    pub fn get_my_albums(&mut self, result: &mut String) {
+    pub fn get_my_albums(&mut self, offset: u16, result: &mut String) {
         let mut list_headers = List::new();
         let _auth = format!(
             "{}{}",
@@ -83,7 +81,7 @@ impl Command {
 
         self.communicator.perform(
             "https://api.spotify.com/v1/me/albums",
-            "limit=50",
+            format!("limit=50&offset={}", offset).as_str(),
             "",
             list_headers,
             "GET",
