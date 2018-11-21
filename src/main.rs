@@ -85,7 +85,7 @@ fn main() -> Result<(), failure::Error> {
                 .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
                 .split(size);
 
-            let style = Style::default().fg(Color::Green).bg(Color::DarkGray);
+            let style = Style::default().fg(Color::Green).bg(Color::Rgb(25,20,20));
 
             let chunks_middle = Layout::default()
                 .direction(Direction::Horizontal)
