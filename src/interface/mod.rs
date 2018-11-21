@@ -9,23 +9,20 @@ use tui::layout::Rect;
 
 pub struct Albums {
     pub size: Rect,
-    pub album_name: Vec<String>,
-    pub album_id: Vec<String>,
+    pub albums: Vec<spotify_cli::Album>,
     pub selected: Option<usize>,
 }
 
 impl<'a> Albums {
-    pub fn new(_album_name: Vec<String>, _album_id: Vec<String>) -> Albums {
+    pub fn new(_albums: Vec<spotify_cli::Album>) -> Albums {
         Albums {
             size: Rect::default(),
-            album_name: _album_name,
-            album_id: _album_id,
+            albums: _albums,
             selected: Some(0),
         }
     }
-    pub fn add_albums(&mut self, _album_name: &mut Vec<String>, _album_id: &mut Vec<String>) {
-        self.album_name.append(_album_name);
-        self.album_id.append(_album_id);
+    pub fn add_albums(&mut self,_albums:&mut Vec<spotify_cli::Album>) {
+        self.albums.append(_albums);
     }
 
     pub fn advance(&mut self) {}

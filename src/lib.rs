@@ -21,10 +21,11 @@ pub struct Track {
     pub name: String,
     pub id: String,
 }
+
+#[derive(Debug, Clone)]
 pub struct Album {
     pub name: String,
     pub id: String,
-    pub tracks: Vec<Track>
 }
 pub struct Artist {}
 pub struct Playlist {}
@@ -76,35 +77,23 @@ impl EasyAPI {
     }
 
     ///  Get the current users album
-    pub fn get_my_albums(&mut self, final_result: &mut Vec<String>) -> Result<(), failure::Error> {
+    pub fn get_my_albums(&mut self, final_result: &mut Vec<Album>) -> Result<(), failure::Error> {
         let mut result = String::new();
         self.command.get_my_albums(&mut result);
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
         for x in 0..size {
-            result = v["items"][x]["album"]["name"].to_string(); // just getting the first result here
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
-            final_result.push(result);
-        }
-        Ok(())
-    }
-    ///  Get the current users album ids
-    pub fn get_my_albums_ids(
-        &mut self,
-        final_result: &mut Vec<String>,
-    ) -> Result<(), failure::Error> {
-        let mut result = String::new();
-        self.command.get_my_albums(&mut result);
-        let v: Value = serde_json::from_str(result.as_str()).unwrap();
-        // work for playlist, we should verify the JSON out for other types to get the right thing
-        let size = v["items"].as_array().unwrap().len();
-        for x in 0..size {
-            result = v["items"][x]["album"]["id"].to_string(); // just getting the first result here
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
-            final_result.push(result);
+            let mut album_name = v["items"][x]["album"]["name"].to_string(); // just getting the first result here
+            album_name = album_name[1..].to_string(); // removing last '"'
+            album_name.pop(); // removing first '"'
+            
+            let mut album_id = v["items"][x]["album"]["id"].to_string(); // just getting the first result here
+            album_id = album_id[1..].to_string(); // removing last '"'
+            album_id.pop(); // removing first '"'
+
+
+            final_result.push(Album { name: album_name, id: album_id});
         }
         Ok(())
     }
@@ -114,19 +103,17 @@ impl EasyAPI {
         id_album: &str,
         final_result: &mut Vec<Track>,
     ) -> Result<(), failure::Error> {
-        let mut track_name = String::new();
-        let mut track_id = String::new();
         let mut result = String::new();
         self.command.get_tracks_from_album(id_album, &mut result);
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
         for x in 0..size {
-            track_name = v["items"][x]["name"].to_string(); // just getting the first result here
+             let mut track_name = v["items"][x]["name"].to_string(); // just getting the first result here
             track_name = track_name[1..].to_string(); // removing last '"'
             track_name.pop(); // removing first '"'
 
-            track_id = v["items"][x]["id"].to_string(); // just getting the first result here
+            let mut track_id = v["items"][x]["id"].to_string(); // just getting the first result here
             track_id = track_id[1..].to_string(); // removing last '"'
             track_id.pop(); // removing first '"'
             final_result.push(Track { name: track_name, id: track_id });

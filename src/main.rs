@@ -35,10 +35,8 @@ fn main() -> Result<(), failure::Error> {
     let mut easy_api = EasyAPI::construct();
     easy_api.refresh().unwrap();
 
-    let mut album_names = Vec::new();
-    easy_api.get_my_albums(&mut album_names).unwrap();
-    let mut album_ids = Vec::new();
-    easy_api.get_my_albums_ids(&mut album_ids).unwrap();
+    let mut albums_data = Vec::new();
+    easy_api.get_my_albums(&mut albums_data).unwrap();
 
     let mut current_artist = String::new();
     let mut current_track = String::new();
@@ -65,9 +63,11 @@ fn main() -> Result<(), failure::Error> {
 
     let events = Events::new();
     // App
-    let mut albums_pane = Albums::new(album_names, album_ids);
+    let mut albums_pane = Albums::new(albums_data);
     let mut tracks_pane = Tracks::new();
     let mut tracks = Vec::new();
+    let mut albums = Vec::new();
+    
     loop {
         let size = terminal.size()?;
         if size != albums_pane.size {
@@ -87,10 +87,12 @@ fn main() -> Result<(), failure::Error> {
                 .direction(Direction::Horizontal)
                 .constraints([Constraint::Percentage(30), Constraint::Percentage(70)].as_ref())
                 .split(chunks[0]);
-
+            for album in albums_pane.albums.clone(){
+                albums.push(album.name);
+            }
             SelectableList::default()
                 .block(Block::default().borders(Borders::ALL).title("Albums"))
-                .items(&albums_pane.album_name)
+                .items(&albums)
                 .select(albums_pane.selected)
                 .style(style)
                 .highlight_style(style.fg(Color::White).modifier(Modifier::Bold))
@@ -138,7 +140,7 @@ fn main() -> Result<(), failure::Error> {
                 }
                 Key::Down => {
                     albums_pane.selected = if let Some(selected) = albums_pane.selected {
-                        if selected >= albums_pane.album_name.len() - 1 {
+                        if selected >= albums_pane.albums.len() - 1 {
                             Some(0)
                         } else {
                             Some(selected + 1)
@@ -163,7 +165,7 @@ fn main() -> Result<(), failure::Error> {
                         if selected > 0 {
                             Some(selected - 1)
                         } else {
-                            Some(albums_pane.album_name.len() - 1)
+                            Some(albums_pane.albums.len() - 1)
                         }
                     } else {
                         None
@@ -192,7 +194,7 @@ fn main() -> Result<(), failure::Error> {
                     albums_pane.selected = if let Some(selected) = albums_pane.selected {
                         let mut tracks_added = Vec::new();
                         easy_api
-                            .get_tracks_from_album(&albums_pane.album_id[selected], &mut tracks_added)
+                            .get_tracks_from_album(&albums_pane.albums[selected].id, &mut tracks_added)
                             .unwrap();
 
                         tracks_pane.clear_tracks();
