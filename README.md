@@ -25,18 +25,17 @@ Well before you can run there are some prerequisites :
 If you plan to use the API alone, you can register your application at [Spotify](https://developer.spotify.com/dashboard/login).
 You will get your spotify client id and secret pair.
 
-Generate a base64 of "clientid:clientsecret" and put the result in a file named `base_64_secret` on the root of the repository.
+Generate a base64 of `<client:id>:<client:secret>` and put the result in a file named `base_64_secret` on the root of the repository.
 
 If you plan to use only the terminal client, sorry but you will have to wait for binary packages to be released.
 
 #### Refresh token
 
 To get the refresh token, for now its a bit more complex. 
-You will have to open a browser and put that URL
+You will have to open a browser and paste that URL in your navigation bar with <YOUR_CLIENT_ID> as your client ID.
 ```
 https://accounts.spotify.com/authorize/?client_id=<YOUR_CLIENT_ID>&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%2Fcallback&scope=user-read-private%20user-read-email%20playlist-read-private%20playlist-read-collaborative%20playlist-modify-public%20playlist-modify-private%20user-follow-modify%20user-follow-read%20user-library-read%20user-library-modify%20user-read-private%20user-read-birthdate%20user-read-email%20user-top-read%20ugc-image-upload%20user-read-playback-state%20user-modify-playback-state%20user-read-currently-playing%20user-read-recently-played
 ```
-with <YOUR_CLIENT_ID> as your client ID.
 
 Authorize the application to use your data, and you will be redirected to localhost with a token in the URI.
 Put that token in a file named `refresh_token` in the root folder of the repository and you should be ok!
