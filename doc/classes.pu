@@ -22,9 +22,9 @@ class lib {
     - Command command
     + search_and_play_first(type : &str, search : &str) -> Result
     + search_playlist(search : &str, result : &mut Vec<String>) -> Result
-    + search_album(search : &str, result : &mut Vec<String>) -> Result
-    + search_track(search : &str, result : &mut Vec<String>) -> Result
-    + search_artist(search : &str, result : &mut Vec<String>) -> Result
+    + search_album(search : &str, result : &mut Vec<Album>) -> Result
+    + search_track(search : &str, result : &mut Vec<Track>) -> Result
+    + search_artist(search : &str, result : &mut Vec<Artist>) -> Result
     + get_currently_playing_artist(result : &mut String) -> Result
     + get_currently_playing_track(result : &mut String)
     + refresh() -> Result
