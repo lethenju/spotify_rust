@@ -23,7 +23,7 @@ use interface::util::{Event, Events};
 
 /// Entry point of the text user interface
 fn main() -> Result<(), failure::Error> {
-    let mut easy_api = EasyAPI::construct();
+    let mut easy_api = EasyAPI::new();
     easy_api.refresh().unwrap();
 
     let mut albums_data = Vec::new();

@@ -30,8 +30,8 @@ pub struct Album {
 pub struct Artist {}
 pub struct Playlist {}
 impl EasyAPI {
-    pub fn construct() -> EasyAPI {
-        let command = Command::construct();
+    pub fn new() -> EasyAPI {
+        let command = Command::new();
         return EasyAPI { command };
     }
     /// Searches for a playlist and play the first item
@@ -240,5 +240,16 @@ impl EasyAPI {
         self.command
             .refresh(base_64_secret.as_str(), refresh_token.as_str());
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    #[test]
+    fn test_play_context() {
+    //    EasyAPI.
     }
 }

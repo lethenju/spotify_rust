@@ -16,8 +16,8 @@ pub struct Command {
 }
 
 impl Command {
-    pub fn construct() -> Command {
-        let communicator = Communicator::construct("NULL");
+    pub fn new() -> Command {
+        let communicator = Communicator::new("NULL");
         return Command { communicator };
     }
     pub fn play(&mut self, _spotify_id: &str, _type: &str, context_id: &str, context_type: &str) {
