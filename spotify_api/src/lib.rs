@@ -51,7 +51,7 @@ impl EasyAPI {
         result.pop(); // removing first '"'
                       //println!("{}",result);
 
-        self.command.play(result.as_str(), type_);
+        self.command.play(result.as_str(), type_, "", "");
         Ok(())
     }
     /// Searches for playlist with the "search" parameter str.
@@ -215,9 +215,20 @@ impl EasyAPI {
         }
         Ok(())
     }
-    /// Plays a track given its ID
-    pub fn play_track_from_id(&mut self, id: &str) -> Result<(), failure::Error> {
-        self.command.play(id, "track");
+    /// Plays a track in a context ( for now just Album..)
+    pub fn play_track(
+        &mut self,
+        track: &Track,
+        context: Option<&Album>,
+    ) -> Result<(), failure::Error> {
+        match context {
+            Some(context) => {
+                self.command
+                    .play(track.id.as_str(), "track", context.id.as_str(), "album")
+            }
+            None => self.command.play(track.id.as_str(), "track", "", ""),
+        }
+
         Ok(())
     }
 

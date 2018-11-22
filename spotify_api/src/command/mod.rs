@@ -20,11 +20,23 @@ impl Command {
         let communicator = Communicator::construct("NULL");
         return Command { communicator };
     }
-    pub fn play(&mut self, _spotify_id: &str, _type: &str) {
-        let mut body_params =
-            format!("{{\"context_uri\":\"spotify:{}:{}\"}}", _type, _spotify_id).to_string();
-        if _type == "track" {
-            body_params = format!("{{\"uris\": [\"spotify:track:{}\"]}}", _spotify_id).to_string();
+    pub fn play(&mut self, _spotify_id: &str, _type: &str, context_id: &str, context_type: &str) {
+        let mut body_params = String::new();
+        if context_id.len() > 0 {
+            // if there is a context
+            let context_id = format!(
+                "\"context_uri\":\"spotify:{}:{}\"",
+                context_type, context_id
+            ).to_string();
+            body_params = format!(
+                "{{{}\"uris\": [\"spotify:{}:{}\"]}}",
+                context_id, _type, _spotify_id
+            ).to_string();
+        } else if _type.len() > 0 {
+            // if there is no context but not just "resume"
+            body_params = format!(
+                "{{\"uris\": [\"spotify:{}:{}\"]}}", _type, _spotify_id
+            ).to_string();
         }
         let mut list_headers = List::new();
         let _auth = format!(
@@ -128,4 +140,6 @@ impl Command {
     pub fn refresh(&mut self, _base_64_secret: &str, _refresh_token: &str) {
         self.communicator.refresh(_base_64_secret, _refresh_token);
     }
+
+
 }
