@@ -10,7 +10,8 @@ use tui::layout::Rect;
 pub struct Albums {
     pub size: Rect,
     pub albums: Vec<spotify_api::Album>,
-    pub selected: Option<usize>,
+    pub selected: usize,
+    pub active: bool
 }
 
 impl<'a> Albums {
@@ -18,27 +19,44 @@ impl<'a> Albums {
         Albums {
             size: Rect::default(),
             albums: _albums,
-            selected: Some(0),
+            selected: 0,
+            active: true,
         }
     }
     pub fn add_albums(&mut self,_albums:&mut Vec<spotify_api::Album>) {
         self.albums.append(_albums);
     }
 
+    pub fn get_selected(&self) -> Option<usize> {
+        if self.active{
+            Some(self.selected)
+        } else {
+            None
+        }
+    }
+    pub fn get_selected_album(&self) -> Option<&spotify_api::Album> {
+        if self.active{
+            Some(&self.albums[self.selected])
+        } else {
+            None
+        }
+    }
     pub fn advance(&mut self) {}
 }
 
 pub struct Tracks {
     pub size: Rect,
     pub tracks: Vec<spotify_api::Track>,
-    pub selected: Option<usize>,
+    pub selected: usize,
+    pub active: bool,
 }
 impl<'a> Tracks {
     pub fn new() -> Tracks {
         Tracks {
             size: Rect::default(),
             tracks: Vec::new(),
-            selected: None,
+            selected: 0,
+            active: false,
         }
     }
 
@@ -49,6 +67,22 @@ impl<'a> Tracks {
         //self.items.remove(self.items.len());
         self.tracks.clear();
     }
+
+    pub fn get_selected(&self) -> Option<usize> {
+        if self.active{
+            Some(self.selected)
+        } else {
+            None
+        }
+    }
+    pub fn get_selected_track(&self) -> Option<&spotify_api::Track> {
+        if self.active{
+            Some(&self.tracks[self.selected])
+        } else {
+            None
+        }
+    }
+
 
     pub fn advance(&mut self) {}
 }

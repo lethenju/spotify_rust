@@ -79,7 +79,7 @@ fn main() -> Result<(), failure::Error> {
             SelectableList::default()
                 .block(Block::default().borders(Borders::ALL).title("Albums"))
                 .items(&albums)
-                .select(albums_pane.selected)
+                .select(albums_pane.get_selected())
                 .style(style)
                 .highlight_style(style.fg(Color::White).modifier(Modifier::Bold))
                 .highlight_symbol(">")
@@ -91,7 +91,7 @@ fn main() -> Result<(), failure::Error> {
             SelectableList::default()
                 .block(Block::default().borders(Borders::ALL).title("Tracks"))
                 .items(&tracks)
-                .select(tracks_pane.selected)
+                .select(tracks_pane.get_selected())
                 .style(style)
                 .highlight_style(style.fg(Color::White).modifier(Modifier::Bold))
                 .highlight_symbol(">")
@@ -121,13 +121,14 @@ fn main() -> Result<(), failure::Error> {
                     break;
                 }
                 Key::Left => {
-                    tracks_pane.selected = None;
-                    albums_pane.selected = Some(0);
+                    tracks_pane.selected = 0;
+                    tracks_pane.active = false;
+                    albums_pane.active = true;
                 }
                 Key::Down => {
-                    albums_pane.selected = if let Some(selected) = albums_pane.selected {
+                    if albums_pane.active {
                         let mut end_of_albums = false;
-                        if selected >= albums_pane.albums.len() - 1 {
+                        if albums_pane.selected >= albums_pane.albums.len() - 1 {
                             // Adding next 20 albums to the list if there is some albums left
                             let before_size = albums_pane.albums.len();
                             easy_api
@@ -140,72 +141,64 @@ fn main() -> Result<(), failure::Error> {
                                 pages_loaded += 1;
                             }
                         }
-
-                        if end_of_albums {
-                            Some(0)
-                        } else {
-                            Some(selected + 1)
-                        }
+                        // switching albums
+                        albums_pane.selected = {
+                            if end_of_albums {
+                                0
+                            } else {
+                                albums_pane.selected + 1
+                            }
+                        };
                     } else {
-                        None
-                    };
-                    tracks_pane.selected = if let Some(selected) = tracks_pane.selected {
-                        if selected >= tracks_pane.tracks.len() - 1 {
-                            Some(0)
-                        } else {
-                            Some(selected + 1)
-                        }
-                    } else {
-                        None
+                        // switching track
+                        tracks_pane.selected = {
+                            if tracks_pane.selected >= tracks_pane.tracks.len() - 1 {
+                                0
+                            } else {
+                                tracks_pane.selected + 1
+                            }
+                        };
                     }
                 }
                 Key::Up => {
-                    albums_pane.selected = if let Some(selected) = albums_pane.selected {
-                        if selected > 0 {
-                            Some(selected - 1)
-                        } else {
-                            Some(albums_pane.albums.len() - 1)
-                        }
+                    if albums_pane.active {
+                        albums_pane.selected = {
+                            if albums_pane.selected > 0 {
+                                albums_pane.selected - 1
+                            } else {
+                                albums_pane.albums.len() - 1
+                            }
+                        };
                     } else {
-                        None
-                    };
-
-                    tracks_pane.selected = if let Some(selected) = tracks_pane.selected {
-                        if selected > 0 {
-                            Some(selected - 1)
-                        } else {
-                            Some(tracks_pane.tracks.len() - 1)
-                        }
-                    } else {
-                        None
+                        tracks_pane.selected = {
+                            if tracks_pane.selected > 0 {
+                                tracks_pane.selected - 1
+                            } else {
+                                tracks_pane.tracks.len() - 1
+                            }
+                        };
                     }
                 }
                 Key::Right => {
-                    tracks_pane.selected = if let Some(selected) = tracks_pane.selected {
+                    if tracks_pane.active {
                         easy_api
-                            .play_track_from_id(&tracks_pane.tracks[selected].id)
-                            .unwrap();
-                        Some(selected)
+                            .play_track(
+                                &tracks_pane.tracks[tracks_pane.selected],
+                                albums_pane.get_selected_album(),
+                            ).unwrap();
                     } else {
-                        Some(1)
-                    };
-
-                    albums_pane.selected = if let Some(selected) = albums_pane.selected {
                         let mut tracks_added = Vec::new();
                         easy_api
                             .get_tracks_from_album(
-                                &albums_pane.albums[selected].id,
+                                &albums_pane.albums[albums_pane.selected].id,
                                 &mut tracks_added,
                             ).unwrap();
 
                         tracks_pane.clear_tracks();
                         tracks_pane.add_tracks(&mut tracks_added);
-                        tracks_pane.selected = Some(0);
-                        None
-                    } else {
-                        None
-                    };
-                    albums_pane.selected = None
+                        tracks_pane.active = true;
+                        albums_pane.active = false;
+                    }
                 }
 
                 _ => {}
