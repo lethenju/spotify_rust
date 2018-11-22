@@ -8,35 +8,55 @@ fn initialize_handle() {
 }
 
 #[test]
-fn test_search_tracks() {
+fn search_tracks() {
     let mut handle = EasyAPI::new();
     handle.refresh();
     let mut billie_jean_results = Vec::new();
     handle.search_track("billie jean", &mut billie_jean_results);
     assert!(billie_jean_results.len() > 0);
+    for track in billie_jean_results {
+        println!("TRACKS {} : {}", track.name, track.id);
+    }
 }
 
 #[test]
-fn test_search_albums() {
+fn search_albums() {
     let mut handle = EasyAPI::new();
     handle.refresh();
     let mut thriller_results = Vec::new();
     handle.search_album("thriller", &mut thriller_results);
     assert!(thriller_results.len() > 0);
+    for album in thriller_results {
+        println!("ALBUMS {} : {}", album.name, album.id);
+    }
 }
 
 #[test]
-fn test_search_artists() {
+fn search_artists() {
     let mut handle = EasyAPI::new();
     handle.refresh();
     let mut mj_results = Vec::new();
-    handle.search_album("Michael Jackson", &mut mj_results);
+    handle.search_artist("Michael Jackson", &mut mj_results);
     assert!(mj_results.len() > 0);
+    for artist in mj_results {
+        println!("ARTIST {} : {}", artist.name, artist.id);
+    }
 }
 
+#[test]
+fn search_playlists() {
+    let mut handle = EasyAPI::new();
+    handle.refresh();
+    let mut mj_results = Vec::new();
+    handle.search_playlist("Michael Jackson", &mut mj_results);
+    assert!(mj_results.len() > 0);
+    for playlist in mj_results {
+        println!("PLAYLIST {} : {}", playlist.name, playlist.id);
+    }
+}
 
 #[test]
-fn test_play_without_context() {
+fn play_without_context() {
     let mut handle = EasyAPI::new();
     handle.refresh();
     let mut billie_jean_results = Vec::new();
