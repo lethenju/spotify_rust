@@ -72,7 +72,7 @@ impl EasyAPI {
         }
         Ok(())
     }
-    /// Get 50 albums in the user's library with a given offset
+    /// Get 20 albums in the user's library with a given offset
     pub fn get_my_albums_chunk(
         &mut self,
         offset: u16,
@@ -102,6 +102,7 @@ impl EasyAPI {
         }
         Ok(())
     }
+    
 
     ///  Get the track names from a given album id
     pub fn get_tracks_from_album(
@@ -253,6 +254,8 @@ impl EasyAPI {
         }
         Ok(())
     }
+
+    
     /// TODO
     /// Not implemented yet
     pub fn pause(&mut self) -> Result<(), std::io::Error> {

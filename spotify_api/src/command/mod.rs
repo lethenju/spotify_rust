@@ -35,7 +35,7 @@ impl Command {
                 context_type, context_id
             ).to_string();
             body_params = format!(
-                "{{{}\"uris\": [\"spotify:{}:{}\"]}}",
+                "{{{},\"offset\": {{\"uri\": \"spotify:{}:{}\"}}}}",
                 context_id, _type, _spotify_id
             ).to_string();
         } else if _type.len() > 0 {
@@ -43,6 +43,7 @@ impl Command {
             body_params =
                 format!("{{\"uris\": [\"spotify:{}:{}\"]}}", _type, _spotify_id).to_string();
         }
+        //println!("{}", body_params);
         let mut list_headers = List::new();
         let _auth = format!(
             "{}{}",
