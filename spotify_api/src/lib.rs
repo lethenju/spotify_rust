@@ -27,8 +27,14 @@ pub struct Album {
     pub name: String,
     pub id: String,
 }
-pub struct Artist {}
-pub struct Playlist {}
+pub struct Artist {
+    pub name: String,
+    pub id: String,
+}
+pub struct Playlist {
+    pub name: String,
+    pub id: String,
+}
 impl EasyAPI {
     pub fn new() -> EasyAPI {
         let command = Command::new();
@@ -52,27 +58,6 @@ impl EasyAPI {
                       //println!("{}",result);
 
         self.command.play(result.as_str(), type_, "", "");
-        Ok(())
-    }
-    /// Searches for playlist with the "search" parameter str.
-    ///  results are added to the final_result String vector in
-    ///  parameter.
-    pub fn search_playlist(
-        &mut self,
-        search: &str,
-        final_result: &mut Vec<String>,
-    ) -> Result<(), failure::Error> {
-        let mut result = String::new();
-        self.command.search(search, "playlist", &mut result);
-        let v: Value = serde_json::from_str(result.as_str()).unwrap();
-        // work for playlist, we should verify the JSON out for other types to get the right thing
-        let size = v["playlists"]["items"].as_array().unwrap().len();
-        for x in 0..size {
-            result = v["playlists"]["items"][x]["name"].to_string(); // just getting the first result here
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
-            final_result.push(result);
-        }
         Ok(())
     }
 
@@ -138,6 +123,34 @@ impl EasyAPI {
         }
         Ok(())
     }
+    /// Searches for playlist with the "search" parameter str.
+    ///  results are added to the final_result String vector in
+    ///  parameter.
+    pub fn search_playlist(
+        &mut self,
+        search: &str,
+        final_result: &mut Vec<Playlist>,
+    ) -> Result<(), failure::Error> {
+        let mut result = String::new();
+        self.command.search(search, "playlist", &mut result);
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+        let size = v["playlists"]["items"].as_array().unwrap().len();
+        for x in 0..size {
+            let playlist_name = v["playlists"]["items"][x]["name"].to_string();
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'
+
+            let playlist_id = v["playlists"]["items"][x]["id"].to_string();
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'
+
+            final_result.push(Playlist {
+                name: playlist_name,
+                id: playlist_id,
+            });
+        }
+        Ok(())
+    }
     /// TODO
     /// Not implemented yet
     pub fn search_album(
@@ -145,7 +158,25 @@ impl EasyAPI {
         search: &str,
         final_result: &mut Vec<Album>,
     ) -> Result<(), failure::Error> {
-        unimplemented!();
+        let mut result = String::new();
+        self.command.search(search, "album", &mut result);
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+        let size = v["albums"]["items"].as_array().unwrap().len();
+        for x in 0..size {
+            let album_name = v["albums"]["items"][x]["name"].to_string();
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'
+
+            let album_id = v["albums"]["items"][x]["id"].to_string();
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'
+
+            final_result.push(Album {
+                name: album_name,
+                id: album_id,
+            });
+        }
+        Ok(())
     }
     /// TODO
     /// Not implemented yet
@@ -154,7 +185,25 @@ impl EasyAPI {
         search: &str,
         final_result: &mut Vec<Track>,
     ) -> Result<(), failure::Error> {
-        unimplemented!();
+        let mut result = String::new();
+        self.command.search(search, "track", &mut result);
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+        let size = v["tracks"]["items"].as_array().unwrap().len();
+        for x in 0..size {
+            let track_name = v["tracks"]["items"][x]["name"].to_string();
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'
+
+            let track_id = v["tracks"]["items"][x]["id"].to_string();
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'
+
+            final_result.push(Track {
+                name: track_name,
+                id: track_id,
+            });
+        }
+        Ok(())
     }
     /// TODO
     /// Not implemented yet
@@ -163,7 +212,25 @@ impl EasyAPI {
         search: &str,
         final_result: &mut Vec<Artist>,
     ) -> Result<(), failure::Error> {
-        unimplemented!();
+        let mut result = String::new();
+        self.command.search(search, "artist", &mut result);
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+        let size = v["artists"]["items"].as_array().unwrap().len();
+        for x in 0..size {
+            let artist_name = v["artists"]["items"][x]["name"].to_string();
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'
+
+            let artist_id = v["artists"]["items"][x]["id"].to_string();
+            result = result[1..].to_string(); // removing last '"'
+            result.pop(); // removing first '"'
+
+            final_result.push(Artist {
+                name: artist_name,
+                id: artist_id,
+            });
+        }
+        Ok(())
     }
     /// TODO
     /// Not implemented yet
@@ -201,9 +268,13 @@ impl EasyAPI {
     pub fn get_currently_playing_track(
         &mut self,
         final_result: &mut String,
-    ) -> Result<(), failure::Error> {
+    ) -> Result<(), std::io::Error> {
         let mut result = String::new();
-        self.command.get_currently_playing(&mut result);
+        let errno = self.command.get_currently_playing(&mut result);
+        if (errno.is_err()) {
+            return errno;
+        }
+
         if result.len() == 0 {
             *final_result = "".to_string();
         } else {
@@ -220,16 +291,15 @@ impl EasyAPI {
         &mut self,
         track: &Track,
         context: Option<&Album>,
-    ) -> Result<(), failure::Error> {
+    ) -> Result<(), std::io::Error> {
         match context {
             Some(context) => {
-                self.command
+                return self
+                    .command
                     .play(track.id.as_str(), "track", context.id.as_str(), "album")
             }
-            None => self.command.play(track.id.as_str(), "track", "", ""),
+            None => return self.command.play(track.id.as_str(), "track", "", ""),
         }
-
-        Ok(())
     }
 
     /// Refreshes the access token by requesting a new one

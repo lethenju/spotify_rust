@@ -20,7 +20,13 @@ impl Command {
         let communicator = Communicator::new("NULL");
         return Command { communicator };
     }
-    pub fn play(&mut self, _spotify_id: &str, _type: &str, context_id: &str, context_type: &str) {
+    pub fn play(
+        &mut self,
+        _spotify_id: &str,
+        _type: &str,
+        context_id: &str,
+        context_type: &str,
+    ) -> Result<(), std::io::Error> {
         let mut body_params = String::new();
         if context_id.len() > 0 {
             // if there is a context
@@ -34,9 +40,8 @@ impl Command {
             ).to_string();
         } else if _type.len() > 0 {
             // if there is no context but not just "resume"
-            body_params = format!(
-                "{{\"uris\": [\"spotify:{}:{}\"]}}", _type, _spotify_id
-            ).to_string();
+            body_params =
+                format!("{{\"uris\": [\"spotify:{}:{}\"]}}", _type, _spotify_id).to_string();
         }
         let mut list_headers = List::new();
         let _auth = format!(
@@ -51,7 +56,7 @@ impl Command {
             .unwrap();
         list_headers.append(&_auth).unwrap();
         let mut result = String::new();
-        self.communicator.perform(
+        return self.communicator.perform(
             "https://api.spotify.com/v1/me/player/play",
             "",
             &body_params.as_str(),
@@ -60,9 +65,9 @@ impl Command {
             &mut result,
         );
     }
-    pub fn pause(&self) {}
-    pub fn next(&self) {}
-    pub fn search(&mut self, _name: &str, _type: &str, result: &mut String) {
+    pub fn pause(&self) -> Result<(), std::io::Error>{unimplemented!()}
+    pub fn next(&self) -> Result<(), std::io::Error>{unimplemented!()}
+    pub fn search(&mut self, _name: &str, _type: &str, result: &mut String) -> Result<(), std::io::Error>{
         let mut list_headers = List::new();
         let _auth = format!(
             "{}{}",
@@ -73,7 +78,7 @@ impl Command {
 
         let _search = utf8_percent_encode(_name, DEFAULT_ENCODE_SET).to_string();
         let _req = format!("q={}&type={}", _search, _type);
-        self.communicator.perform(
+        return self.communicator.perform(
             "https://api.spotify.com/v1/search",
             &_req,
             "",
@@ -82,7 +87,11 @@ impl Command {
             &mut *result,
         );
     }
-    pub fn get_my_albums(&mut self, offset: u16, result: &mut String) {
+    pub fn get_my_albums(
+        &mut self,
+        offset: u16,
+        result: &mut String,
+    ) -> Result<(), std::io::Error> {
         let mut list_headers = List::new();
         let _auth = format!(
             "{}{}",
@@ -91,7 +100,7 @@ impl Command {
         );
         list_headers.append(&_auth).unwrap();
 
-        self.communicator.perform(
+        return self.communicator.perform(
             "https://api.spotify.com/v1/me/albums",
             format!("limit=20&offset={}", offset).as_str(),
             "",
@@ -100,7 +109,11 @@ impl Command {
             &mut *result,
         );
     }
-    pub fn get_tracks_from_album(&mut self, id: &str, result: &mut String) {
+    pub fn get_tracks_from_album(
+        &mut self,
+        id: &str,
+        result: &mut String,
+    ) -> Result<(), std::io::Error> {
         // GET https://api.spotify.com/v1/albums/{id}/tracks
         let mut list_headers = List::new();
         let _auth = format!(
@@ -110,7 +123,7 @@ impl Command {
         );
         list_headers.append(&_auth).unwrap();
 
-        self.communicator.perform(
+        return self.communicator.perform(
             format!("https://api.spotify.com/v1/albums/{}/tracks", id).as_str(),
             "",
             "",
@@ -119,7 +132,7 @@ impl Command {
             &mut *result,
         );
     }
-    pub fn get_currently_playing(&mut self, result: &mut String) {
+    pub fn get_currently_playing(&mut self, result: &mut String) -> Result<(), std::io::Error> {
         let mut list_headers = List::new();
         let _auth = format!(
             "{}{}",
@@ -128,7 +141,7 @@ impl Command {
         );
         list_headers.append(&_auth).unwrap();
 
-        self.communicator.perform(
+        return self.communicator.perform(
             "https://api.spotify.com/v1/me/player/currently-playing",
             "",
             "",
@@ -137,9 +150,11 @@ impl Command {
             &mut *result,
         );
     }
-    pub fn refresh(&mut self, _base_64_secret: &str, _refresh_token: &str) {
-        self.communicator.refresh(_base_64_secret, _refresh_token);
+    pub fn refresh(
+        &mut self,
+        _base_64_secret: &str,
+        _refresh_token: &str,
+    ) -> Result<(), std::io::Error> {
+        return self.communicator.refresh(_base_64_secret, _refresh_token);
     }
-
-
 }
