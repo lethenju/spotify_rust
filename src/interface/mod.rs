@@ -35,11 +35,7 @@ impl<'a> Albums {
         }
     }
     pub fn get_selected_album(&self) -> Option<&spotify_api::Album> {
-        if self.active{
-            Some(&self.albums[self.selected])
-        } else {
-            None
-        }
+        Some(&self.albums[self.selected])
     }
     pub fn advance(&mut self) {}
 }
