@@ -79,12 +79,12 @@ impl EasyAPI {
     ///  Get all the current user's albums
     pub fn get_my_albums(&mut self, final_result: &mut Vec<Album>) -> Result<(), failure::Error> {
         for i in 0..5 { // SUPER dirty -> TODO get number of album to know how many chunks to get. 
-            self.get_my_albums_chunk(i*50,final_result);
+            self.get_my_albums_chunk(i*50,final_result).unwrap();
         }
         Ok(())
     }
     /// Get 50 albums in the user's library with a given offset 
-    pub fn get_my_albums_chunk(&mut self, offset: u16, final_result: &mut Vec<Album>) {
+    pub fn get_my_albums_chunk(&mut self, offset: u16, final_result: &mut Vec<Album>) -> Result<(), failure::Error>  {
         let mut result = String::new();
         self.command.get_my_albums(offset, &mut result);
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
@@ -102,6 +102,7 @@ impl EasyAPI {
 
             final_result.push(Album { name: album_name, id: album_id});
         }
+        Ok(())
     }
 
     ///  Get the track names from a given album id
