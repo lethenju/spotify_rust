@@ -15,7 +15,7 @@ fn search_tracks() {
     handle.search_track("billie jean", &mut billie_jean_results);
     assert!(billie_jean_results.len() > 0);
     for track in billie_jean_results {
-        println!("TRACKS {} : {}", track.name, track.id);
+        println!("TRACKS {} : {}", track.id, track.name);
     }
 }
 
@@ -27,7 +27,7 @@ fn search_albums() {
     handle.search_album("thriller", &mut thriller_results);
     assert!(thriller_results.len() > 0);
     for album in thriller_results {
-        println!("ALBUMS {} : {}", album.name, album.id);
+        println!("ALBUMS {} : {}", album.id, album.name);
     }
 }
 
@@ -39,7 +39,7 @@ fn search_artists() {
     handle.search_artist("Michael Jackson", &mut mj_results);
     assert!(mj_results.len() > 0);
     for artist in mj_results {
-        println!("ARTIST {} : {}", artist.name, artist.id);
+        println!("ARTIST {} : {}", artist.id, artist.name);
     }
 }
 
@@ -51,7 +51,7 @@ fn search_playlists() {
     handle.search_playlist("Michael Jackson", &mut mj_results);
     assert!(mj_results.len() > 0);
     for playlist in mj_results {
-        println!("PLAYLIST {} : {}", playlist.name, playlist.id);
+        println!("PLAYLIST {} : {}", playlist.id, playlist.name);
     }
 }
 
