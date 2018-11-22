@@ -136,13 +136,13 @@ impl EasyAPI {
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["playlists"]["items"].as_array().unwrap().len();
         for x in 0..size {
-            let playlist_name = v["playlists"]["items"][x]["name"].to_string();
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
+            let mut playlist_name = v["playlists"]["items"][x]["name"].to_string();
+            playlist_name = playlist_name[1..].to_string(); // removing last '"'
+            playlist_name.pop(); // removing first '"'
 
-            let playlist_id = v["playlists"]["items"][x]["id"].to_string();
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
+            let mut playlist_id = v["playlists"]["items"][x]["id"].to_string();
+            playlist_id = playlist_id[1..].to_string(); // removing last '"'
+            playlist_id.pop(); // removing first '"'
 
             final_result.push(Playlist {
                 name: playlist_name,
@@ -163,13 +163,13 @@ impl EasyAPI {
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["albums"]["items"].as_array().unwrap().len();
         for x in 0..size {
-            let album_name = v["albums"]["items"][x]["name"].to_string();
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
+            let mut album_name = v["albums"]["items"][x]["name"].to_string();
+            album_name = album_name[1..].to_string(); // removing last '"'
+            album_name.pop(); // removing first '"'
 
-            let album_id = v["albums"]["items"][x]["id"].to_string();
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
+            let mut album_id = v["albums"]["items"][x]["id"].to_string();
+            album_id = album_id[1..].to_string(); // removing last '"'
+            album_id.pop(); // removing first '"'
 
             final_result.push(Album {
                 name: album_name,
@@ -190,13 +190,13 @@ impl EasyAPI {
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["tracks"]["items"].as_array().unwrap().len();
         for x in 0..size {
-            let track_name = v["tracks"]["items"][x]["name"].to_string();
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
+            let mut track_name = v["tracks"]["items"][x]["name"].to_string();
+            track_name = track_name[1..].to_string(); // removing last '"'
+            track_name.pop(); // removing first '"'
 
-            let track_id = v["tracks"]["items"][x]["id"].to_string();
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
+            let mut track_id = v["tracks"]["items"][x]["id"].to_string();
+            track_id = track_id[1..].to_string(); // removing last '"'
+            track_id.pop(); // removing first '"'
 
             final_result.push(Track {
                 name: track_name,
@@ -217,13 +217,13 @@ impl EasyAPI {
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["artists"]["items"].as_array().unwrap().len();
         for x in 0..size {
-            let artist_name = v["artists"]["items"][x]["name"].to_string();
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
+            let mut artist_name = v["artists"]["items"][x]["name"].to_string();
+            artist_name = artist_name[1..].to_string(); // removing last '"'
+            artist_name.pop(); // removing first '"'
 
-            let artist_id = v["artists"]["items"][x]["id"].to_string();
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
+            let mut artist_id = v["artists"]["items"][x]["id"].to_string();
+            artist_id = artist_id[1..].to_string(); // removing last '"'
+            artist_id.pop(); // removing first '"'
 
             final_result.push(Artist {
                 name: artist_name,
