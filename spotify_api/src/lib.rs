@@ -78,13 +78,18 @@ impl EasyAPI {
 
     ///  Get all the current user's albums
     pub fn get_my_albums(&mut self, final_result: &mut Vec<Album>) -> Result<(), failure::Error> {
-        for i in 0..5 { // SUPER dirty -> TODO get number of album to know how many chunks to get. 
-            self.get_my_albums_chunk(i*50,final_result).unwrap();
+        for i in 0..5 {
+            // SUPER dirty -> TODO get number of album to know how many chunks to get.
+            self.get_my_albums_chunk(i * 50, final_result).unwrap();
         }
         Ok(())
     }
-    /// Get 50 albums in the user's library with a given offset 
-    pub fn get_my_albums_chunk(&mut self, offset: u16, final_result: &mut Vec<Album>) -> Result<(), failure::Error>  {
+    /// Get 50 albums in the user's library with a given offset
+    pub fn get_my_albums_chunk(
+        &mut self,
+        offset: u16,
+        final_result: &mut Vec<Album>,
+    ) -> Result<(), failure::Error> {
         let mut result = String::new();
         self.command.get_my_albums(offset, &mut result);
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
@@ -94,13 +99,15 @@ impl EasyAPI {
             let mut album_name = v["items"][x]["album"]["name"].to_string(); // just getting the first result here
             album_name = album_name[1..].to_string(); // removing last '"'
             album_name.pop(); // removing first '"'
-            
+
             let mut album_id = v["items"][x]["album"]["id"].to_string(); // just getting the first result here
             album_id = album_id[1..].to_string(); // removing last '"'
             album_id.pop(); // removing first '"'
 
-
-            final_result.push(Album { name: album_name, id: album_id});
+            final_result.push(Album {
+                name: album_name,
+                id: album_id,
+            });
         }
         Ok(())
     }
@@ -117,14 +124,17 @@ impl EasyAPI {
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
         for x in 0..size {
-             let mut track_name = v["items"][x]["name"].to_string(); // just getting the first result here
+            let mut track_name = v["items"][x]["name"].to_string(); // just getting the first result here
             track_name = track_name[1..].to_string(); // removing last '"'
             track_name.pop(); // removing first '"'
 
             let mut track_id = v["items"][x]["id"].to_string(); // just getting the first result here
             track_id = track_id[1..].to_string(); // removing last '"'
             track_id.pop(); // removing first '"'
-            final_result.push(Track { name: track_name, id: track_id });
+            final_result.push(Track {
+                name: track_name,
+                id: track_id,
+            });
         }
         Ok(())
     }
@@ -135,7 +145,7 @@ impl EasyAPI {
         search: &str,
         final_result: &mut Vec<Album>,
     ) -> Result<(), failure::Error> {
-        Ok(())
+        unimplemented!();
     }
     /// TODO
     /// Not implemented yet
@@ -144,7 +154,7 @@ impl EasyAPI {
         search: &str,
         final_result: &mut Vec<Track>,
     ) -> Result<(), failure::Error> {
-        Ok(())
+        unimplemented!();
     }
     /// TODO
     /// Not implemented yet
@@ -153,23 +163,17 @@ impl EasyAPI {
         search: &str,
         final_result: &mut Vec<Artist>,
     ) -> Result<(), failure::Error> {
-        Ok(())
+        unimplemented!();
     }
     /// TODO
     /// Not implemented yet
-    pub fn pause(
-        &mut self
-    ) -> Result<(), failure::Error> {
-        self.command.pause();
-        Ok(())
+    pub fn pause(&mut self) -> Result<(), failure::Error> {
+        unimplemented!();
     }
     /// TODO
     /// Not implemented yet
-    pub fn next(
-        &mut self
-    ) -> Result<(), failure::Error> {
-        self.command.next();
-        Ok(())
+    pub fn next(&mut self) -> Result<(), failure::Error> {
+        unimplemented!();
     }
 
     /// Gets the currently playing artist on the final_result argument

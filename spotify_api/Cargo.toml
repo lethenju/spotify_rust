@@ -1,14 +1,12 @@
 [package]
-name = "spotify_rust"
+name = "spotify_api"
 version = "0.0.1"
 authors = ["Julien LE THENO"]
 
+[workspace]
+
 [dependencies]
-spotify_api = {path = "spotify_api"}
 curl = "0.4.18"
 serde_json = "1.0"
 percent-encoding = "1.0.1"
-clap = "2.32.0"
-termion = "*"
-tui = "*"
 failure = "0.1"

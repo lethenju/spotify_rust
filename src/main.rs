@@ -1,5 +1,5 @@
 extern crate failure;
-extern crate spotify_rust;
+extern crate spotify_api;
 extern crate termion;
 extern crate tui;
 
@@ -7,7 +7,7 @@ extern crate tui;
 mod interface;
 
 use interface::{Albums, Tracks};
-pub use spotify_rust::EasyAPI;
+pub use spotify_api::EasyAPI;
 use std::io;
 use termion::event::Key;
 use termion::input::MouseTerminal;
@@ -21,17 +21,10 @@ use tui::Terminal;
 
 use interface::util::{Event, Events};
 
-fn main() -> Result<(), failure::Error> {
-    /*let mut search = String::new();
-    {
-        println!("Search for a playlist :");
-        let stdin = io::stdin();
-        let mut iterator = stdin.lock().lines();
-        search = iterator.next().unwrap().unwrap().to_string();
-    }
 
-    println!("Ok, lets find {}", search);
-*/
+/// Entry point of the text user interface
+fn main() -> Result<(), failure::Error> {
+
     let mut easy_api = EasyAPI::construct();
     easy_api.refresh().unwrap();
 
