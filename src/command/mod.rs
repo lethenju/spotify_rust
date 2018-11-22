@@ -81,7 +81,7 @@ impl Command {
 
         self.communicator.perform(
             "https://api.spotify.com/v1/me/albums",
-            format!("limit=50&offset={}", offset).as_str(),
+            format!("limit=20&offset={}", offset).as_str(),
             "",
             list_headers,
             "GET",
