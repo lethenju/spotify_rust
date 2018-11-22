@@ -141,11 +141,26 @@ fn main() -> Result<(), failure::Error> {
                 }
                 Key::Down => {
                     albums_pane.selected = if let Some(selected) = albums_pane.selected {
+                        let mut end_of_albums = false;
                         if selected >= albums_pane.albums.len() - 1 {
-                            easy_api.get_my_albums_chunk(20*pages_loaded, &mut albums_pane.albums).unwrap();
-                            pages_loaded += 1;
+                            // Adding next 20 albums to the list if there is some albums left
+                            let before_size = albums_pane.albums.len();
+                            easy_api
+                                .get_my_albums_chunk(20 * pages_loaded, &mut albums_pane.albums)
+                                .unwrap();
+                            // if we got to the end of a user's album list
+                            if before_size == albums_pane.albums.len() {
+                                end_of_albums = true;
+                            } else {
+                                pages_loaded += 1;
+                            }
                         }
-                        Some(selected + 1)
+
+                        if end_of_albums {
+                            Some(0)
+                        } else {
+                            Some(selected + 1)
+                        }
                     } else {
                         None
                     };
