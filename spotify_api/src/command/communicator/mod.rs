@@ -83,15 +83,15 @@ impl Communicator {
                 transfer.perform().unwrap();
             }
         }
-        if self.easy_handle.response_code() != Ok(200) {
-            println!(
-                "HTTP Req failed! with response code {:?}",
-                self.easy_handle.response_code().unwrap()
-            );
-            return Err(Error::new(
-                ErrorKind::Other,
-                format!("Error HTTP {:?}", self.easy_handle.response_code().unwrap()),
-            ));
+        match self.easy_handle.response_code() {
+            Ok(200) => {},
+            Ok(204) => {},
+            _ => {
+                return Err(Error::new(
+                    ErrorKind::Other,
+                    format!("{:?}", self.easy_handle.response_code().unwrap()),
+                ));
+            }
         }
         self.easy_handle.reset();
         let s = str::from_utf8(&data2).unwrap();
@@ -133,15 +133,15 @@ impl Communicator {
                 }).unwrap();
             transfer.perform().unwrap();
         }
-        if self.easy_handle.response_code() != Ok(200) {
-            println!(
-                "HTTP Req failed! with response code {:?}",
-                self.easy_handle.response_code().unwrap()
-            );
-            return Err(Error::new(
-                ErrorKind::Other,
-                format!("Error HTTP {:?}", self.easy_handle.response_code().unwrap()),
-            ));
+        match self.easy_handle.response_code() {
+            Ok(200) => {},
+            Ok(204) => {},
+            _ => {
+                return Err(Error::new(
+                    ErrorKind::Other,
+                    format!("{:?}", self.easy_handle.response_code().unwrap()),
+                ));
+            }
         }
         self.easy_handle.reset();
 
