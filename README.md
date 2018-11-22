@@ -58,33 +58,40 @@ I plan to automate that process as soon as possible to make it easier for you :)
 
 #### Album
 
-- name : String
-- id : String
-- tracks : Vec<Track> // TODO
+| member | type       | implemented ? |
+| ------ | ---------- | ------------- |
+| name   | String     | YES           |
+| id     | String     | YES           |
+| tracks | Vec<Track> | NO            |
 
 #### Track
 
-- name : String
-- id : String
+| member | type   | implemented ? |
+| ------ | ------ | ------------- |
+| name   | String | YES           |
+| id     | String | YES           |
 
 #### Artist
 
-- name : String // TODO
-- id : String // TODO
-- albums : Vec<Album> // TODO
+| member | type       | implemented ? |
+| ------ | ---------- | ------------- |
+| name   | String     | NO            |
+| id     | String     | NO            |
+| albums | Vec<Album> | NO            |
 
 #### Playlist
 
-- name : String // TODO
-- id : String // TODO
-- track : Vec<Track> // TODO
+| member | type       | implemented ? |
+| ------ | ---------- | ------------- |
+| name   | String     | YES           |
+| id     | String     | YES           |
+| tracks | Vec<Track> | NO            |
 
 ### APIs
 
 #### Player
 
 #### Library
-
 
 ## Running the tests
 
