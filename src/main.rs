@@ -21,10 +21,8 @@ use tui::Terminal;
 
 use interface::util::{Event, Events};
 
-
 /// Entry point of the text user interface
 fn main() -> Result<(), failure::Error> {
-
     let mut easy_api = EasyAPI::construct();
     easy_api.refresh().unwrap();
 
@@ -33,18 +31,12 @@ fn main() -> Result<(), failure::Error> {
 
     let mut current_artist = String::new();
     let mut current_track = String::new();
-    if easy_api
+    easy_api
         .get_currently_playing_artist(&mut current_artist)
-        .is_err()
-    {
-        current_artist = "None".to_string();
-    }
-    if easy_api
+        .unwrap();
+    easy_api
         .get_currently_playing_track(&mut current_track)
-        .is_err()
-    {
-        current_track = "None".to_string();
-    }
+        .unwrap();
 
     // Terminal initialization
     let stdout = io::stdout().into_raw_mode()?;
