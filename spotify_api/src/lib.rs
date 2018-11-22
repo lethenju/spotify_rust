@@ -47,9 +47,12 @@ impl EasyAPI {
         &mut self,
         type_: &str,
         search: &str,
-    ) -> Result<(), failure::Error> {
+    ) -> Result<(), std::io::Error> {
         let mut result = String::new();
-        self.command.search(search, type_, &mut result);
+        let errno = self.command.search(search, type_, &mut result);
+        if errno.is_err() {
+            return errno;
+        }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         // work for playlist, we should verify the JSON out for other types to get the right thing
         result = v["playlists"]["items"][0]["id"].to_string(); // just getting the first result here
@@ -62,7 +65,7 @@ impl EasyAPI {
     }
 
     ///  Get all the current user's albums
-    pub fn get_my_albums(&mut self, final_result: &mut Vec<Album>) -> Result<(), failure::Error> {
+    pub fn get_my_albums(&mut self, final_result: &mut Vec<Album>) -> Result<(), std::io::Error> {
         for i in 0..5 {
             // SUPER dirty -> TODO get number of album to know how many chunks to get.
             self.get_my_albums_chunk(i * 50, final_result).unwrap();
@@ -74,9 +77,12 @@ impl EasyAPI {
         &mut self,
         offset: u16,
         final_result: &mut Vec<Album>,
-    ) -> Result<(), failure::Error> {
+    ) -> Result<(), std::io::Error> {
         let mut result = String::new();
-        self.command.get_my_albums(offset, &mut result);
+        let errno = self.command.get_my_albums(offset, &mut result);
+        if errno.is_err() {
+            return errno;
+        }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
@@ -102,9 +108,12 @@ impl EasyAPI {
         &mut self,
         id_album: &str,
         final_result: &mut Vec<Track>,
-    ) -> Result<(), failure::Error> {
+    ) -> Result<(), std::io::Error> {
         let mut result = String::new();
-        self.command.get_tracks_from_album(id_album, &mut result);
+        let errno = self.command.get_tracks_from_album(id_album, &mut result);
+        if errno.is_err() {
+            return errno;
+        }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
@@ -130,9 +139,12 @@ impl EasyAPI {
         &mut self,
         search: &str,
         final_result: &mut Vec<Playlist>,
-    ) -> Result<(), failure::Error> {
+    ) -> Result<(), std::io::Error> {
         let mut result = String::new();
-        self.command.search(search, "playlist", &mut result);
+        let errno = self.command.search(search, "playlist", &mut result);
+        if errno.is_err() {
+            return errno;
+        }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["playlists"]["items"].as_array().unwrap().len();
         for x in 0..size {
@@ -157,9 +169,12 @@ impl EasyAPI {
         &mut self,
         search: &str,
         final_result: &mut Vec<Album>,
-    ) -> Result<(), failure::Error> {
+    ) -> Result<(), std::io::Error> {
         let mut result = String::new();
-        self.command.search(search, "album", &mut result);
+        let errno = self.command.search(search, "album", &mut result);
+        if errno.is_err() {
+            return errno;
+        }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["albums"]["items"].as_array().unwrap().len();
         for x in 0..size {
@@ -184,9 +199,12 @@ impl EasyAPI {
         &mut self,
         search: &str,
         final_result: &mut Vec<Track>,
-    ) -> Result<(), failure::Error> {
+    ) -> Result<(), std::io::Error> {
         let mut result = String::new();
-        self.command.search(search, "track", &mut result);
+        let errno = self.command.search(search, "track", &mut result);
+        if errno.is_err() {
+            return errno;
+        }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["tracks"]["items"].as_array().unwrap().len();
         for x in 0..size {
@@ -211,9 +229,12 @@ impl EasyAPI {
         &mut self,
         search: &str,
         final_result: &mut Vec<Artist>,
-    ) -> Result<(), failure::Error> {
+    ) -> Result<(), std::io::Error> {
         let mut result = String::new();
-        self.command.search(search, "artist", &mut result);
+        let errno = self.command.search(search, "artist", &mut result);
+        if errno.is_err() {
+            return errno;
+        }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["artists"]["items"].as_array().unwrap().len();
         for x in 0..size {
@@ -234,12 +255,12 @@ impl EasyAPI {
     }
     /// TODO
     /// Not implemented yet
-    pub fn pause(&mut self) -> Result<(), failure::Error> {
+    pub fn pause(&mut self) -> Result<(), std::io::Error> {
         unimplemented!();
     }
     /// TODO
     /// Not implemented yet
-    pub fn next(&mut self) -> Result<(), failure::Error> {
+    pub fn next(&mut self) -> Result<(), std::io::Error> {
         unimplemented!();
     }
 
@@ -248,9 +269,12 @@ impl EasyAPI {
     pub fn get_currently_playing_artist(
         &mut self,
         final_result: &mut String,
-    ) -> Result<(), failure::Error> {
+    ) -> Result<(), std::io::Error> {
         let mut result = String::new();
-        self.command.get_currently_playing(&mut result);
+        let errno = self.command.get_currently_playing(&mut result);
+        if errno.is_err() {
+            return errno;
+        }
         if result.len() == 0 {
             *final_result = "".to_string();
         } else {
@@ -271,7 +295,7 @@ impl EasyAPI {
     ) -> Result<(), std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_currently_playing(&mut result);
-        if (errno.is_err()) {
+        if errno.is_err() {
             return errno;
         }
 
@@ -292,23 +316,34 @@ impl EasyAPI {
         track: &Track,
         context: Option<&Album>,
     ) -> Result<(), std::io::Error> {
-        match context {
-            Some(context) => {
-                return self
-                    .command
-                    .play(track.id.as_str(), "track", context.id.as_str(), "album")
+        let mut error = {
+            match context {
+                Some(context) => {
+                    self.command
+                        .play(track.id.as_str(), "track", context.id.as_str(), "album")
+                }
+                None => self.command.play(track.id.as_str(), "track", "", ""),
             }
-            None => return self.command.play(track.id.as_str(), "track", "", ""),
+        };
+        match error {
+            Err(e) => {
+                if e.kind() == std::io::ErrorKind::NotFound {
+                    println!("No devices connected for the playback!")
+                }
+            }
+            _ => return error,
         }
+
+        Ok(())
     }
 
     /// Refreshes the access token by requesting a new one
-    pub fn refresh(&mut self) -> Result<(), failure::Error> {
+    pub fn refresh(&mut self) -> Result<(), std::io::Error> {
         let mut refresh_token = String::new();
         let mut base_64_secret = String::new();
         files::load_keys(&mut refresh_token, &mut base_64_secret);
-        self.command
+        return self
+            .command
             .refresh(base_64_secret.as_str(), refresh_token.as_str());
-        Ok(())
     }
 }
