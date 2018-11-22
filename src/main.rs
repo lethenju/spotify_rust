@@ -8,7 +8,7 @@ mod interface;
 
 use interface::{Albums, Tracks};
 pub use spotify_rust::EasyAPI;
-use std::io::{self};
+use std::io;
 use termion::event::Key;
 use termion::input::MouseTerminal;
 use termion::raw::IntoRawMode;
@@ -36,7 +36,7 @@ fn main() -> Result<(), failure::Error> {
     easy_api.refresh().unwrap();
 
     let mut albums_data = Vec::new();
-    easy_api.get_my_albums(&mut albums_data).unwrap();
+    easy_api.get_my_albums_chunk(0, &mut albums_data).unwrap();
 
     let mut current_artist = String::new();
     let mut current_track = String::new();
@@ -67,7 +67,7 @@ fn main() -> Result<(), failure::Error> {
     let mut tracks_pane = Tracks::new();
     let mut tracks = Vec::new();
     let mut albums = Vec::new();
-    
+    let mut pages_loaded = 1;
     loop {
         let size = terminal.size()?;
         if size != albums_pane.size {
@@ -81,13 +81,14 @@ fn main() -> Result<(), failure::Error> {
                 .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
                 .split(size);
 
-            let style = Style::default().fg(Color::Green).bg(Color::Rgb(25,20,20));
+            let style = Style::default().fg(Color::Green).bg(Color::Rgb(25, 20, 20));
 
             let chunks_middle = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints([Constraint::Percentage(30), Constraint::Percentage(70)].as_ref())
                 .split(chunks[0]);
-            for album in albums_pane.albums.clone(){
+            albums.clear();
+            for album in albums_pane.albums.clone() {
                 albums.push(album.name);
             }
             SelectableList::default()
@@ -99,7 +100,7 @@ fn main() -> Result<(), failure::Error> {
                 .highlight_symbol(">")
                 .render(&mut f, chunks_middle[0]);
             tracks.clear();
-            for track in tracks_pane.tracks.clone(){
+            for track in tracks_pane.tracks.clone() {
                 tracks.push(track.name);
             }
             SelectableList::default()
@@ -141,10 +142,10 @@ fn main() -> Result<(), failure::Error> {
                 Key::Down => {
                     albums_pane.selected = if let Some(selected) = albums_pane.selected {
                         if selected >= albums_pane.albums.len() - 1 {
-                            Some(0)
-                        } else {
-                            Some(selected + 1)
+                            easy_api.get_my_albums_chunk(20*pages_loaded, &mut albums_pane.albums).unwrap();
+                            pages_loaded += 1;
                         }
+                        Some(selected + 1)
                     } else {
                         None
                     };
@@ -157,8 +158,6 @@ fn main() -> Result<(), failure::Error> {
                     } else {
                         None
                     }
-
-                    
                 }
                 Key::Up => {
                     albums_pane.selected = if let Some(selected) = albums_pane.selected {
@@ -194,8 +193,10 @@ fn main() -> Result<(), failure::Error> {
                     albums_pane.selected = if let Some(selected) = albums_pane.selected {
                         let mut tracks_added = Vec::new();
                         easy_api
-                            .get_tracks_from_album(&albums_pane.albums[selected].id, &mut tracks_added)
-                            .unwrap();
+                            .get_tracks_from_album(
+                                &albums_pane.albums[selected].id,
+                                &mut tracks_added,
+                            ).unwrap();
 
                         tracks_pane.clear_tracks();
                         tracks_pane.add_tracks(&mut tracks_added);
@@ -210,7 +211,6 @@ fn main() -> Result<(), failure::Error> {
                 _ => {}
             },
             Event::Tick => {
-                
                 if easy_api
                     .get_currently_playing_artist(&mut current_artist)
                     .is_err()
