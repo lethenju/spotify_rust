@@ -80,12 +80,18 @@ impl Communicator {
                         data2.extend_from_slice(new_data);
                         Ok(new_data.len())
                     }).unwrap();
-                transfer.perform().unwrap();
+                match transfer.perform() {
+                    Ok(()) => {}
+                    _ => {
+                        println!("Connection error");
+                        return Err(Error::new(ErrorKind::NotConnected, "Connection error"));
+                    }
+                }
             }
         }
         match self.easy_handle.response_code() {
-            Ok(200) => {},
-            Ok(204) => {},
+            Ok(200) => {}
+            Ok(204) => {}
             _ => {
                 return Err(Error::new(
                     ErrorKind::Other,
@@ -131,11 +137,17 @@ impl Communicator {
                     data.extend_from_slice(new_data);
                     Ok(new_data.len())
                 }).unwrap();
-            transfer.perform().unwrap();
+            match transfer.perform() {
+                Ok(()) => {}
+                _ => {
+                    println!("Connection error");
+                    return Err(Error::new(ErrorKind::NotConnected, "Connection error"));
+                }
+            }
         }
         match self.easy_handle.response_code() {
-            Ok(200) => {},
-            Ok(204) => {},
+            Ok(200) => {}
+            Ok(204) => {}
             _ => {
                 return Err(Error::new(
                     ErrorKind::Other,
