@@ -102,7 +102,6 @@ impl EasyAPI {
         }
         Ok(())
     }
-    
 
     ///  Get the track names from a given album id
     pub fn get_tracks_from_album(
@@ -133,7 +132,7 @@ impl EasyAPI {
         }
         Ok(())
     }
-   
+
     /// Searches for playlists with the name "search" in it.
     /// Stores the results in a reference to a vector of Playlist on "final_result"
     pub fn search_playlist(
@@ -258,7 +257,6 @@ impl EasyAPI {
         Ok(())
     }
 
-    
     /// TODO
     /// Not implemented yet
     pub fn pause(&mut self) -> Result<(), std::io::Error> {
@@ -274,7 +272,7 @@ impl EasyAPI {
     /// final_result setted to "" if no track is playing
     pub fn get_currently_playing_artist(
         &mut self,
-        final_result: &mut String,
+        final_result: &mut Artist,
     ) -> Result<(), std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_currently_playing(&mut result);
@@ -285,10 +283,17 @@ impl EasyAPI {
             *final_result = "".to_string();
         } else {
             let v: Value = serde_json::from_str(result.as_str()).unwrap();
-            result = v["item"]["artists"][0]["name"].to_string();
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
-            *final_result = result;
+            let mut artist_name = v["item"]["artists"][0]["name"].to_string();
+            artist_name = artist_name[1..].to_string(); // removing last '"'
+            artist_name.pop(); // removing first '"'
+            let mut artist_id = v["item"]["artists"][0]["id"].to_string();
+            artist_id = artist_id[1..].to_string(); // removing last '"'
+            artist_id.pop(); // removing first '"'
+
+            *final_result = Artist {
+                name: artist_name,
+                id: artist_id,
+            };
         }
         Ok(())
     }
@@ -297,7 +302,7 @@ impl EasyAPI {
     /// final_result setted to "" if no track is playing
     pub fn get_currently_playing_track(
         &mut self,
-        final_result: &mut String,
+        final_result: &mut Track,
     ) -> Result<(), std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_currently_playing(&mut result);
@@ -309,10 +314,17 @@ impl EasyAPI {
             *final_result = "".to_string();
         } else {
             let v: Value = serde_json::from_str(result.as_str()).unwrap();
-            result = v["item"]["name"].to_string();
-            result = result[1..].to_string(); // removing last '"'
-            result.pop(); // removing first '"'
-            *final_result = result;
+            let mut track_name = v["item"]["name"].to_string();
+            track_name = track_name[1..].to_string(); // removing last '"'
+            track_name.pop(); // removing first '"'
+            let mut track_id = v["item"]["name"].to_string();
+            track_id = track_id[1..].to_string(); // removing last '"'
+            track_id.pop(); // removing first '"'
+
+            *final_result = Track {
+                name: track_name,
+                id: track_id,
+            }
         }
         Ok(())
     }
