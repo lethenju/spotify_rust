@@ -79,7 +79,7 @@ fn main() -> Result<(), failure::Error> {
             SelectableList::default()
                 .block(Block::default().borders(Borders::ALL).title("Albums"))
                 .items(&albums)
-                .select(albums_pane.get_selected())
+                .select(Some(albums_pane.selected))
                 .style(style)
                 .highlight_style(style.fg(Color::White).modifier(Modifier::Bold))
                 .highlight_symbol(">")
@@ -100,11 +100,11 @@ fn main() -> Result<(), failure::Error> {
             let text = [
                 Text::styled(
                     format!("Artist : {}\n", &current_artist.as_str()),
-                    Style::default().fg(Color::White).modifier(Modifier::Bold),
+                    Style::default().fg(Color::White).bg(Color::Black).modifier(Modifier::Bold),
                 ),
                 Text::styled(
                     format!("Track : {}", &current_track.as_str()),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Color::White).bg(Color::Black),
                 ),
             ];
             Paragraph::new(text.iter())
