@@ -133,9 +133,9 @@ impl EasyAPI {
         }
         Ok(())
     }
-    /// Searches for playlist with the "search" parameter str.
-    ///  results are added to the final_result String vector in
-    ///  parameter.
+   
+    /// Searches for playlists with the name "search" in it.
+    /// Stores the results in a reference to a vector of Playlist on "final_result"
     pub fn search_playlist(
         &mut self,
         search: &str,
@@ -164,8 +164,9 @@ impl EasyAPI {
         }
         Ok(())
     }
-    /// TODO
-    /// Not implemented yet
+
+    /// Searches for albums with the name "search" in it.
+    /// Stores the results in a reference to a vector of Albums on "final_result"
     pub fn search_album(
         &mut self,
         search: &str,
@@ -194,8 +195,9 @@ impl EasyAPI {
         }
         Ok(())
     }
-    /// TODO
-    /// Not implemented yet
+
+    /// Searches for tracks with the name "search" in it.
+    /// Stores the results in a reference to a vector of Tracks on "final_result"
     pub fn search_track(
         &mut self,
         search: &str,
@@ -224,8 +226,9 @@ impl EasyAPI {
         }
         Ok(())
     }
-    /// TODO
-    /// Not implemented yet
+
+    /// Searches for artists with the name "search" in it.
+    /// Stores the results in a reference to a vector of Artists on "final_result"
     pub fn search_artist(
         &mut self,
         search: &str,
