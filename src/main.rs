@@ -24,7 +24,13 @@ use interface::util::{Event, Events};
 /// Entry point of the text user interface
 fn main() -> Result<(), failure::Error> {
     let mut easy_api = EasyAPI::new();
-    easy_api.refresh().unwrap();
+    match easy_api.refresh() {
+        Ok(()) => {},
+        Err(err) => {
+            println!("Refresh failed : {:?}",err.kind());
+            return Ok(())
+        }
+    }
 
     let mut albums_data = Vec::new();
     easy_api.get_my_albums_chunk(0, &mut albums_data).unwrap();
