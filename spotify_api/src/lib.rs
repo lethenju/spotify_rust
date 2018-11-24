@@ -303,13 +303,11 @@ impl EasyAPI {
     pub fn get_currently_playing_track(&mut self) -> Result<Track, std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_currently_playing(&mut result);
-
-        if result.len() == 0 {
-            return Err(std::io::Error::new(
-                std::io::ErrorKind::NotFound,
-                "No track playing",
-            ));
-        } else {
+        match errno {
+            Err(error) => return Err(error),
+            _ => {}
+        }
+        if result.len() != 0 {
             let v: Value = serde_json::from_str(result.as_str()).unwrap();
             let mut track_name = v["item"]["name"].to_string();
             track_name = track_name[1..].to_string(); // removing last '"'
