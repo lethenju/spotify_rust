@@ -1,3 +1,6 @@
 /target
 /spotify_api/target
 **/*.rs.bk
+*.lock
+base_64_secret
+refresh_token
