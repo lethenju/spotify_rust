@@ -270,18 +270,15 @@ impl EasyAPI {
 
     /// Gets the currently playing artist on the final_result argument
     /// final_result setted to "" if no track is playing
-    pub fn get_currently_playing_artist(
-        &mut self,
-        final_result: &mut Artist,
-    ) -> Result<(), std::io::Error> {
+    pub fn get_currently_playing_artist(&mut self) -> Result<Artist, std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_currently_playing(&mut result);
-        if errno.is_err() {
-            return errno;
+        match errno {
+            Err(error) => return Err(error),
+            _ => {}
         }
-        if result.len() == 0 {
-            *final_result = "".to_string();
-        } else {
+
+        if result.len() != 0 {
             let v: Value = serde_json::from_str(result.as_str()).unwrap();
             let mut artist_name = v["item"]["artists"][0]["name"].to_string();
             artist_name = artist_name[1..].to_string(); // removing last '"'
@@ -290,28 +287,28 @@ impl EasyAPI {
             artist_id = artist_id[1..].to_string(); // removing last '"'
             artist_id.pop(); // removing first '"'
 
-            *final_result = Artist {
+            return Ok(Artist {
                 name: artist_name,
                 id: artist_id,
-            };
+            });
         }
-        Ok(())
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "No track playing",
+        ));
     }
 
     /// Gets the currently playing track on the final_result argument
     /// final_result setted to "" if no track is playing
-    pub fn get_currently_playing_track(
-        &mut self,
-        final_result: &mut Track,
-    ) -> Result<(), std::io::Error> {
+    pub fn get_currently_playing_track(&mut self) -> Result<Track, std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_currently_playing(&mut result);
-        if errno.is_err() {
-            return errno;
-        }
 
         if result.len() == 0 {
-            *final_result = "".to_string();
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "No track playing",
+            ));
         } else {
             let v: Value = serde_json::from_str(result.as_str()).unwrap();
             let mut track_name = v["item"]["name"].to_string();
@@ -320,13 +317,15 @@ impl EasyAPI {
             let mut track_id = v["item"]["name"].to_string();
             track_id = track_id[1..].to_string(); // removing last '"'
             track_id.pop(); // removing first '"'
-
-            *final_result = Track {
+            return Ok(Track {
                 name: track_name,
                 id: track_id,
-            }
+            });
         }
-        Ok(())
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "No track playing",
+        ));
     }
     /// Plays a track in a context ( for now just Album..)
     pub fn play_track(
