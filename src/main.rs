@@ -25,24 +25,18 @@ use interface::util::{Event, Events};
 fn main() -> Result<(), failure::Error> {
     let mut easy_api = EasyAPI::new();
     match easy_api.refresh() {
-        Ok(()) => {},
+        Ok(()) => {}
         Err(err) => {
-            println!("Refresh failed : {:?}",err.kind());
-            return Ok(())
+            println!("Refresh failed : {:?}", err.kind());
+            return Ok(());
         }
     }
 
     let mut albums_data = Vec::new();
     easy_api.get_my_albums_chunk(0, &mut albums_data).unwrap();
 
-    let mut current_artist = String::new();
-    let mut current_track = String::new();
-    easy_api
-        .get_currently_playing_artist(&mut current_artist)
-        .unwrap();
-    easy_api
-        .get_currently_playing_track(&mut current_track)
-        .unwrap();
+    let mut current_artist = easy_api.get_currently_playing_artist().unwrap();
+    let mut current_track = easy_api.get_currently_playing_track().unwrap();
 
     // Terminal initialization
     let stdout = io::stdout().into_raw_mode()?;
@@ -105,14 +99,17 @@ fn main() -> Result<(), failure::Error> {
 
             let text = [
                 Text::styled(
-                    format!("Artist : {}\n", &current_artist.as_str()),
-                    Style::default().fg(Color::White).bg(Color::Black).modifier(Modifier::Bold),
+                    format!("Artist : {}\n", &current_artist.name),
+                    Style::default()
+                        .fg(Color::White)
+                        .bg(Color::Black)
+                        .modifier(Modifier::Bold),
                 ),
                 Text::styled(
-                    format!("Track : {}", &current_track.as_str()),
+                    format!("Track : {}", &current_track.name),
                     Style::default().fg(Color::White).bg(Color::Black),
-                ),
-            ];
+                )];
+            
             Paragraph::new(text.iter())
                 .block(Block::default().title("Now Playing").borders(Borders::ALL))
                 .style(Style::default().fg(Color::White).bg(Color::Black))
@@ -210,18 +207,8 @@ fn main() -> Result<(), failure::Error> {
                 _ => {}
             },
             Event::Tick => {
-                if easy_api
-                    .get_currently_playing_artist(&mut current_artist)
-                    .is_err()
-                {
-                    current_artist = "None".to_string();
-                }
-                if easy_api
-                    .get_currently_playing_track(&mut current_track)
-                    .is_err()
-                {
-                    current_track = "None".to_string();
-                }
+                current_artist = easy_api.get_currently_playing_artist().unwrap();
+                current_track = easy_api.get_currently_playing_track().unwrap();
             }
         }
     }
