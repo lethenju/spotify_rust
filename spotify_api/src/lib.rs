@@ -257,14 +257,19 @@ impl EasyAPI {
         Ok(())
     }
 
-    /// TODO
+    /// Pauses the playback. 
     /// Not implemented yet
     pub fn pause(&mut self) -> Result<(), std::io::Error> {
         unimplemented!();
     }
-    /// TODO
+    /// Returns the next song in the active context
     /// Not implemented yet
-    pub fn next(&mut self) -> Result<(), std::io::Error> {
+    pub fn get_next(&mut self) -> Result<Track, std::io::Error> {
+        unimplemented!();
+    }
+    /// Returns the previous track
+    /// Not implemented yet
+    pub fn get_previous(&mut self) -> Result<Track, std::io::Error> {
         unimplemented!();
     }
 
@@ -331,7 +336,7 @@ impl EasyAPI {
         track: &Track,
         context: Option<&Album>,
     ) -> Result<(), std::io::Error> {
-        let mut error = {
+        let error = {
             match context {
                 Some(context) => {
                     self.command
