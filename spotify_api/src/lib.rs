@@ -135,15 +135,12 @@ impl EasyAPI {
 
     /// Searches for playlists with the name "search" in it.
     /// Stores the results in a reference to a vector of Playlist on "final_result"
-    pub fn search_playlist(
-        &mut self,
-        search: &str,
-        final_result: &mut Vec<Playlist>,
-    ) -> Result<(), std::io::Error> {
+    pub fn search_playlist(&mut self, search: &str) -> Result<Vec<Playlist>, std::io::Error> {
         let mut result = String::new();
-        let errno = self.command.search(search, "playlist", &mut result);
-        if errno.is_err() {
-            return errno;
+        let mut final_result = Vec::new();
+        match self.command.search(search, "playlist", &mut result) {
+            Ok(ok) => {},
+            Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["playlists"]["items"].as_array().unwrap().len();
@@ -161,20 +158,18 @@ impl EasyAPI {
                 id: playlist_id,
             });
         }
-        Ok(())
+        Ok(final_result)
     }
 
     /// Searches for albums with the name "search" in it.
     /// Stores the results in a reference to a vector of Albums on "final_result"
-    pub fn search_album(
-        &mut self,
-        search: &str,
-        final_result: &mut Vec<Album>,
-    ) -> Result<(), std::io::Error> {
+    pub fn search_album(&mut self, search: &str) -> Result<Vec<Album>, std::io::Error> {
         let mut result = String::new();
-        let errno = self.command.search(search, "album", &mut result);
-        if errno.is_err() {
-            return errno;
+        let mut final_result = Vec::new();
+
+        match self.command.search(search, "album", &mut result) {
+            Ok(ok) => {},
+            Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["albums"]["items"].as_array().unwrap().len();
@@ -192,20 +187,18 @@ impl EasyAPI {
                 id: album_id,
             });
         }
-        Ok(())
+        Ok(final_result)
     }
 
     /// Searches for tracks with the name "search" in it.
     /// Stores the results in a reference to a vector of Tracks on "final_result"
-    pub fn search_track(
-        &mut self,
-        search: &str,
-        final_result: &mut Vec<Track>,
-    ) -> Result<(), std::io::Error> {
+    pub fn search_track(&mut self, search: &str) -> Result<Vec<Track>, std::io::Error> {
         let mut result = String::new();
-        let errno = self.command.search(search, "track", &mut result);
-        if errno.is_err() {
-            return errno;
+        let mut final_result = Vec::new();
+
+        match self.command.search(search, "track", &mut result) {
+            Ok(ok) => {},
+            Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["tracks"]["items"].as_array().unwrap().len();
@@ -223,20 +216,17 @@ impl EasyAPI {
                 id: track_id,
             });
         }
-        Ok(())
+        Ok(final_result)
     }
 
     /// Searches for artists with the name "search" in it.
     /// Stores the results in a reference to a vector of Artists on "final_result"
-    pub fn search_artist(
-        &mut self,
-        search: &str,
-        final_result: &mut Vec<Artist>,
-    ) -> Result<(), std::io::Error> {
+    pub fn search_artist(&mut self, search: &str) -> Result<Vec<Artist>, std::io::Error> {
         let mut result = String::new();
-        let errno = self.command.search(search, "artist", &mut result);
-        if errno.is_err() {
-            return errno;
+        let mut final_result = Vec::new();
+        match self.command.search(search, "artist", &mut result) {
+            Ok(ok) => {},
+            Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["artists"]["items"].as_array().unwrap().len();
@@ -254,10 +244,10 @@ impl EasyAPI {
                 id: artist_id,
             });
         }
-        Ok(())
+        Ok(final_result)
     }
 
-    /// Pauses the playback. 
+    /// Pauses the playback.
     /// Not implemented yet
     pub fn pause(&mut self) -> Result<(), std::io::Error> {
         unimplemented!();
