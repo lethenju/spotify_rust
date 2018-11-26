@@ -113,15 +113,12 @@ impl EasyAPI {
     }
 
     ///  Get the track names from a given album id
-    pub fn get_tracks_from_album(
-        &mut self,
-        id_album: &str,
-        final_result: &mut Vec<Track>,
-    ) -> Result<(), std::io::Error> {
+    pub fn get_tracks_from_album(&mut self, id_album: &str) -> Result<Vec<Track>, std::io::Error> {
         let mut result = String::new();
-        let errno = self.command.get_tracks_from_album(id_album, &mut result);
-        if errno.is_err() {
-            return errno;
+        let mut final_result = Vec::new();
+        match self.command.get_tracks_from_album(id_album, &mut result) {
+            Ok(_ok) => {}
+            Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         // work for playlist, we should verify the JSON out for other types to get the right thing
@@ -140,7 +137,7 @@ impl EasyAPI {
                 artist: None,
             });
         }
-        Ok(())
+        Ok(final_result)
     }
 
     /// Searches for playlists with the name "search" in it.
