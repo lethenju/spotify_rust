@@ -58,34 +58,35 @@ I plan to automate that process as soon as possible to make it easier for you :)
 
 #### Album
 
-| member | type       | implemented ? |
-| ------ | ---------- | ------------- |
-| name   | String     | YES           |
-| id     | String     | YES           |
-| tracks | Vec<Track> | NO            |
+| member | type               | implemented ? |
+| ------ | ------------------ | ------------- |
+| name   | String             | YES           |
+| id     | String             | YES           |
+| tracks | Option<Vec<Track>> | PARTLY        |
 
 #### Track
 
-| member | type   | implemented ? |
-| ------ | ------ | ------------- |
-| name   | String | YES           |
-| id     | String | YES           |
+| member | type           | implemented ? |
+| ------ | -------------- | ------------- |
+| name   | String         | YES           |
+| id     | String         | YES           |
+| artist | Option<Artist> | PARTLY        |
 
 #### Artist
 
-| member | type       | implemented ? |
-| ------ | ---------- | ------------- |
-| name   | String     | NO            |
-| id     | String     | NO            |
-| albums | Vec<Album> | NO            |
+| member | type               | implemented ? |
+| ------ | ------------------ | ------------- |
+| name   | String             | YES           |
+| id     | String             | YES           |
+| albums | Option<Vec<Album>> | PARTLY        |
 
 #### Playlist
 
-| member | type       | implemented ? |
-| ------ | ---------- | ------------- |
-| name   | String     | YES           |
-| id     | String     | YES           |
-| tracks | Vec<Track> | NO            |
+| member | type               | implemented ? |
+| ------ | ------------------ | ------------- |
+| name   | String             | YES           |
+| id     | String             | YES           |
+| tracks | Option<Vec<Track>> | PARTLY        |
 
 ### APIs
 

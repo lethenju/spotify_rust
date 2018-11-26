@@ -15,27 +15,36 @@ use self::serde_json::Value;
 pub struct EasyAPI {
     command: Command,
 }
-
+/// Track structure that represents a spotify track, with its name, Artist and Spotify ID.
 #[derive(Debug, Clone)]
 pub struct Track {
     pub name: String,
     pub id: String,
+    pub artist: Option<Artist>,
 }
-
+/// Album structure that represents a spotify album, with its name, Spotify ID, and a Vector of Tracks
 #[derive(Debug, Clone)]
 pub struct Album {
     pub name: String,
     pub id: String,
+    pub tracks: Option<Vec<Track>>,
 }
+/// Artist structure that represents an Artist, with its name, Spotify ID, and a Vector of Albums
+#[derive(Debug, Clone)]
 pub struct Artist {
     pub name: String,
     pub id: String,
+    pub albums: Option<Vec<Album>>,
 }
+/// Playlist structure that represents a Playlist, with its name, Spotify ID, and a Vector of Tracks
+#[derive(Debug, Clone)]
 pub struct Playlist {
     pub name: String,
     pub id: String,
+    pub tracks: Option<Vec<Track>>,
 }
 impl EasyAPI {
+    /// Creates a EasyAPI handle
     pub fn new() -> EasyAPI {
         let command = Command::new();
         return EasyAPI { command };
@@ -97,6 +106,7 @@ impl EasyAPI {
             final_result.push(Album {
                 name: album_name,
                 id: album_id,
+                tracks: None,
             });
         }
         Ok(())
@@ -127,6 +137,7 @@ impl EasyAPI {
             final_result.push(Track {
                 name: track_name,
                 id: track_id,
+                artist: None,
             });
         }
         Ok(())
@@ -138,7 +149,7 @@ impl EasyAPI {
         let mut result = String::new();
         let mut final_result = Vec::new();
         match self.command.search(search, "playlist", &mut result) {
-            Ok(_ok) => {},
+            Ok(_ok) => {}
             Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
@@ -155,6 +166,7 @@ impl EasyAPI {
             final_result.push(Playlist {
                 name: playlist_name,
                 id: playlist_id,
+                tracks: None, // TODO add tracks
             });
         }
         Ok(final_result)
@@ -167,7 +179,7 @@ impl EasyAPI {
         let mut final_result = Vec::new();
 
         match self.command.search(search, "album", &mut result) {
-            Ok(_ok) => {},
+            Ok(_ok) => {}
             Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
@@ -184,6 +196,7 @@ impl EasyAPI {
             final_result.push(Album {
                 name: album_name,
                 id: album_id,
+                tracks: None,
             });
         }
         Ok(final_result)
@@ -196,7 +209,7 @@ impl EasyAPI {
         let mut final_result = Vec::new();
 
         match self.command.search(search, "track", &mut result) {
-            Ok(_ok) => {},
+            Ok(_ok) => {}
             Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
@@ -213,6 +226,7 @@ impl EasyAPI {
             final_result.push(Track {
                 name: track_name,
                 id: track_id,
+                artist: None,
             });
         }
         Ok(final_result)
@@ -224,7 +238,7 @@ impl EasyAPI {
         let mut result = String::new();
         let mut final_result = Vec::new();
         match self.command.search(search, "artist", &mut result) {
-            Ok(_ok) => {},
+            Ok(_ok) => {}
             Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
@@ -241,6 +255,7 @@ impl EasyAPI {
             final_result.push(Artist {
                 name: artist_name,
                 id: artist_id,
+                albums: None, // TODO add albums
             });
         }
         Ok(final_result)
@@ -284,6 +299,7 @@ impl EasyAPI {
             return Ok(Artist {
                 name: artist_name,
                 id: artist_id,
+                albums: None, // TODO Add artist
             });
         }
         return Err(std::io::Error::new(
@@ -312,6 +328,7 @@ impl EasyAPI {
             return Ok(Track {
                 name: track_name,
                 id: track_id,
+                artist: None, // TODO Add artist
             });
         }
         return Err(std::io::Error::new(
