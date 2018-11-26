@@ -108,8 +108,9 @@ fn main() -> Result<(), failure::Error> {
                 Text::styled(
                     format!("Track : {}", &current_track.name),
                     Style::default().fg(Color::White).bg(Color::Black),
-                )];
-            
+                ),
+            ];
+
             Paragraph::new(text.iter())
                 .block(Block::default().title("Now Playing").borders(Borders::ALL))
                 .style(Style::default().fg(Color::White).bg(Color::Black))
@@ -190,12 +191,9 @@ fn main() -> Result<(), failure::Error> {
                                 albums_pane.get_selected_album(),
                             ).unwrap();
                     } else {
-                        let mut tracks_added = Vec::new();
-                        easy_api
-                            .get_tracks_from_album(
-                                &albums_pane.albums[albums_pane.selected].id,
-                                &mut tracks_added,
-                            ).unwrap();
+                        let mut tracks_added = easy_api
+                            .get_tracks_from_album(&albums_pane.albums[albums_pane.selected].id)
+                            .unwrap();
 
                         tracks_pane.clear_tracks();
                         tracks_pane.add_tracks(&mut tracks_added);
