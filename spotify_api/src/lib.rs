@@ -60,8 +60,7 @@ impl EasyAPI {
         result.pop(); // removing first '"'
                       //println!("{}",result);
 
-        self.command.play(result.as_str(), type_, "", "");
-        Ok(())
+        self.command.play(result.as_str(), type_, "", "")
     }
 
     ///  Get all the current user's albums
@@ -139,7 +138,7 @@ impl EasyAPI {
         let mut result = String::new();
         let mut final_result = Vec::new();
         match self.command.search(search, "playlist", &mut result) {
-            Ok(ok) => {},
+            Ok(_ok) => {},
             Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
@@ -168,7 +167,7 @@ impl EasyAPI {
         let mut final_result = Vec::new();
 
         match self.command.search(search, "album", &mut result) {
-            Ok(ok) => {},
+            Ok(_ok) => {},
             Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
@@ -197,7 +196,7 @@ impl EasyAPI {
         let mut final_result = Vec::new();
 
         match self.command.search(search, "track", &mut result) {
-            Ok(ok) => {},
+            Ok(_ok) => {},
             Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
@@ -225,7 +224,7 @@ impl EasyAPI {
         let mut result = String::new();
         let mut final_result = Vec::new();
         match self.command.search(search, "artist", &mut result) {
-            Ok(ok) => {},
+            Ok(_ok) => {},
             Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
