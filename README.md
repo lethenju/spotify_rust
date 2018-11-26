@@ -90,14 +90,19 @@ I plan to automate that process as soon as possible to make it easier for you :)
 
 ### APIs
 
+#### EasyAPI handle
+
+#### Refreshing tokens
+
 #### Player
 
 #### Library
 
 ## Running the tests
 
-Some integration tests are being developped, the coverage isnt really perfect
-for now. You can run the tests with `cargo test`
+`cd spotify_api` to get in the library module
+You can run the tests with `cargo test`
+
 
 ## Built With
 
