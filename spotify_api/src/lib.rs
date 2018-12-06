@@ -364,7 +364,15 @@ impl EasyAPI {
     pub fn refresh(&mut self) -> Result<(), std::io::Error> {
         let mut refresh_token = String::new();
         let mut base_64_secret = String::new();
-        files::load_keys(&mut refresh_token, &mut base_64_secret);
+        match files::load_keys(&mut refresh_token, &mut base_64_secret) {
+            Ok(()) => {}
+            _ => {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "No file :(",
+                ));
+            }
+        }
         return self
             .command
             .refresh(base_64_secret.as_str(), refresh_token.as_str());
