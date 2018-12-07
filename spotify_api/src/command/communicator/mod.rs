@@ -120,14 +120,13 @@ impl Communicator {
             if code.len() > 0 {
                 self.easy_handle
                     .post_fields_copy(
-                        &format!("{}{}", "grant_type=authorization_code&code=", code).as_bytes(),
+                        &format!("grant_type=authorization_code&code={}&redirect_uri=http://localhost/", code).as_bytes(),
                     ).unwrap();
             } else {
                 self.easy_handle
                     .post_fields_copy(
                         &format!(
-                            "{}{}",
-                            "grant_type=refresh_token&refresh_token=", _refresh_token
+                            "grant_type=refresh_token&refresh_token={}", _refresh_token
                         ).as_bytes(),
                     ).unwrap();
             }
@@ -136,7 +135,7 @@ impl Communicator {
                 .url("https://accounts.spotify.com/api/token")
                 .unwrap();
             let mut list = List::new();
-            let _request2 = format!("{}{}", "Authorization: Basic ", _base64_secret);
+            let _request2 = format!("Authorization: Basic {}", _base64_secret);
             list.append(&_request2).unwrap();
             self.easy_handle.http_headers(list).unwrap();
             let mut transfer = self.easy_handle.transfer();
