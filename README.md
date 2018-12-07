@@ -112,7 +112,7 @@ External crates:
 - `clap` for the command line interpreter
 - `failure`
 - `tiny_http` for the automated refresh token generation process
-- `term-painter`
+- `term-painter` for colorful stdout during the automated refresh token generation process
 - `termion` for the text user interface
 - `text_io`
 - `tui` for the text user interface
