@@ -108,7 +108,7 @@ You can run the tests with `cargo test`.
 
 External crates:
 
-- `base64` 
+- `base64` for encoding the application credentials pair.
 - `clap` for the command line interpreter
 - `failure`
 - `tiny_http` for the automated refresh token generation process
