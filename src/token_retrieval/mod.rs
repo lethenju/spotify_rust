@@ -42,7 +42,7 @@ pub fn retrieve_tokens(handle: &mut EasyAPI) -> Result<(), std::io::Error> {
             println!("token {}", code.as_str());
 
             // TODO, store the value for the other thread
-            let response = tiny_http::Response::from_file(File::open("auto_quit.html").unwrap());
+            let response = tiny_http::Response::from_string("Success! You can now close this window!".to_string());
             let _ = request.respond(response);
             break;
         }
