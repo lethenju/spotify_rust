@@ -66,9 +66,18 @@ impl Command {
             &mut result,
         );
     }
-    pub fn pause(&self) -> Result<(), std::io::Error>{unimplemented!()}
-    pub fn next(&self) -> Result<(), std::io::Error>{unimplemented!()}
-    pub fn search(&mut self, _name: &str, _type: &str, result: &mut String) -> Result<(), std::io::Error>{
+    pub fn pause(&self) -> Result<(), std::io::Error> {
+        unimplemented!()
+    }
+    pub fn next(&self) -> Result<(), std::io::Error> {
+        unimplemented!()
+    }
+    pub fn search(
+        &mut self,
+        _name: &str,
+        _type: &str,
+        result: &mut String,
+    ) -> Result<(), std::io::Error> {
         let mut list_headers = List::new();
         let _auth = format!(
             "{}{}",
@@ -153,9 +162,17 @@ impl Command {
     }
     pub fn refresh(
         &mut self,
-        _base_64_secret: &str,
-        _refresh_token: &str,
+        base_64_secret: &str,
+        refresh_token: &str,
     ) -> Result<(), std::io::Error> {
-        return self.communicator.refresh(_base_64_secret, _refresh_token);
+        return self.communicator.refresh(base_64_secret, refresh_token, "");
+    }
+    pub fn retrieve_refresh_token(
+        &mut self,
+        base_64_secret: &str,
+        access_token: &str,
+    ) -> Result<String, std::io::Error> {
+        self.communicator.refresh(base_64_secret, "", access_token).unwrap();
+        Ok(self.communicator.get_access_token().to_string())
     }
 }

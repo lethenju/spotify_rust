@@ -11,7 +11,7 @@ mod token_retrieval;
 
 use interface::util::{Event, Events};
 use interface::{Albums, Tracks};
-pub use spotify_api::EasyAPI;
+use spotify_api::EasyAPI;
 use std::io;
 use termion::event::Key;
 use termion::input::MouseTerminal;
@@ -29,7 +29,7 @@ fn main() -> Result<(), failure::Error> {
     match easy_api.refresh() {
         Ok(()) => {}
         Err(_err) => {
-            token_retrieval::retrieve_tokens().unwrap();
+            token_retrieval::retrieve_tokens(&mut easy_api).unwrap();
         }
     }
 

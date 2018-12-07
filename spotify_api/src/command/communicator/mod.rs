@@ -111,18 +111,26 @@ impl Communicator {
         &mut self,
         _base64_secret: &str,
         _refresh_token: &str,
+        code: &str,
     ) -> Result<(), std::io::Error> {
         //println!("Refreshing access token");
         let mut data = Vec::new();
         {
             self.easy_handle.post(true).unwrap();
-            self.easy_handle
-                .post_fields_copy(
-                    &format!(
-                        "{}{}",
-                        "grant_type=refresh_token&refresh_token=", _refresh_token
-                    ).as_bytes(),
-                ).unwrap();
+            if code.len() > 0 {
+                self.easy_handle
+                    .post_fields_copy(
+                        &format!("{}{}", "grant_type=authorization_code&code=", code).as_bytes(),
+                    ).unwrap();
+            } else {
+                self.easy_handle
+                    .post_fields_copy(
+                        &format!(
+                            "{}{}",
+                            "grant_type=refresh_token&refresh_token=", _refresh_token
+                        ).as_bytes(),
+                    ).unwrap();
+            }
 
             self.easy_handle
                 .url("https://accounts.spotify.com/api/token")

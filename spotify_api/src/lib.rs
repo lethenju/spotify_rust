@@ -377,4 +377,15 @@ impl EasyAPI {
             .command
             .refresh(base_64_secret.as_str(), refresh_token.as_str());
     }
+
+    pub fn retrieve_refresh_token(
+        &mut self,
+        base_64_secret: String,
+        access_token: String,
+    ) -> Result<String, std::io::Error> {
+        let refresh_token = self
+            .command
+            .retrieve_refresh_token(base_64_secret.as_str(), access_token.as_str());
+        Ok(refresh_token.unwrap())
+    }
 }
