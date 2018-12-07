@@ -1,6 +1,6 @@
 [package]
 name = "spotify_rust"
-version = "0.0.1"
+version = "0.0.3"
 authors = ["Julien LE THENO"]
 
 [dependencies]
