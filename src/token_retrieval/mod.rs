@@ -1,12 +1,14 @@
 extern crate term_painter;
+extern crate tiny_http;
 
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 
 use self::term_painter::Color::*;
-use self::term_painter::{ToStyle};
-
-pub use spotify_api::EasyAPI;
+use self::term_painter::ToStyle;
+use self::tiny_http::Server;
+use spotify_api::EasyAPI;
+use std::thread;
 
 pub fn retrieve_tokens(handle: &mut EasyAPI) -> Result<(), std::io::Error> {
     println!(
@@ -33,9 +35,25 @@ pub fn retrieve_tokens(handle: &mut EasyAPI) -> Result<(), std::io::Error> {
         .unwrap();
     f.write(base64.as_bytes()).unwrap();
 
-    webbrowser::open(&format!("https://accounts.spotify.com/authorize/?client_id={}&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%2F&scope=user-read-private%20user-read-email%20playlist-read-private%20playlist-read-collaborative%20playlist-modify-public%20playlist-modify-private%20user-follow-modify%20user-follow-read%20user-library-read%20user-library-modify%20user-read-private%20user-read-birthdate%20user-read-email%20user-top-read%20ugc-image-upload%20user-read-playback-state%20user-modify-playback-state%20user-read-currently-playing%20user-read-recently-played",clientid.as_str())).unwrap();
-    println!("{}", Blue.paint("Paste now the token : "));
-    let code: String = text_io::read!("{}\n");
+    webbrowser::open(&format!("https://accounts.spotify.com/authorize/?client_id={}&response_type=code&redirect_uri=http%3A%2F%2Flocalhost:8000%2F&scope=user-read-private%20user-read-email%20playlist-read-private%20playlist-read-collaborative%20playlist-modify-public%20playlist-modify-private%20user-follow-modify%20user-follow-read%20user-library-read%20user-library-modify%20user-read-private%20user-read-birthdate%20user-read-email%20user-top-read%20ugc-image-upload%20user-read-playback-state%20user-modify-playback-state%20user-read-currently-playing%20user-read-recently-played",clientid.as_str())).unwrap();
+
+    let server = Server::http("localhost:8000").unwrap();
+    let thread_handle = thread::spawn(move || {
+        for request in server.incoming_requests() {
+            let code = (&request.url()[7..]).to_string();
+            println!("token {}", code.as_str());
+
+            // TODO, store the value for the other thread
+            let response = tiny_http::Response::from_file(File::open("auto_quit.html").unwrap());
+            let _ = request.respond(response);
+            break;
+        }
+    });
+
+    thread_handle.join().unwrap();
+    // TODO, retrieve the value code !from the other thread
+    let code = "TODO".to_string();
+
     let refresh_token = (*handle).retrieve_refresh_token(base64, code).unwrap();
 
     File::create("refresh_token").unwrap();
@@ -46,6 +64,5 @@ pub fn retrieve_tokens(handle: &mut EasyAPI) -> Result<(), std::io::Error> {
         .unwrap();
     f.write(refresh_token.as_bytes()).unwrap();
 
-    (*handle).refresh().unwrap();
     Ok(())
 }
