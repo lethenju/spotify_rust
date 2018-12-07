@@ -110,7 +110,10 @@ External crates:
 
 - `base64` for encoding the application credentials pair.
 - `clap` for the command line interpreter
+- `curl` for sending HTTP requests.
 - `failure`
+- `percent-encoding` to encode search queries in percent encoding.
+- `serde_json` for JSON parsing.
 - `tiny_http` for the automated refresh token generation process
 - `term-painter` for colorful stdout during the automated refresh token generation process
 - `termion` for the text user interface
