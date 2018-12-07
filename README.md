@@ -1,20 +1,20 @@
 # Spotify Rust
 
-Spotify_rust can control your Spotify playback without having to use your mouse.
+`spotify_rust` can control your Spotify playback without having to use your mouse.
 
-spotify-rust is made of two elements :
+`spotify_rust` is made of two elements :
 
 - An API for Spotify, controlling playback, searching for tracks, albums or
-  playlists, and much more
+  playlists, and much more.
 - A client in text user interface, directly in your terminal, to browse your
   spotify Library and play tracks.
 
 ## Getting Started
 
-Just clone the repository and `cargo run` !
+Just clone the repository and `cargo run`!
 
 Keep in mind before using this that we are in a very early stage, and drastic
-changes can occur anytime. It is not recommanded to use the API until the beta
+changes can occur anytime. It is not recommended to use the API until the beta
 stage.
 
 ### Prerequisites
@@ -47,7 +47,7 @@ https://accounts.spotify.com/authorize/?client_id=<YOUR_CLIENT_ID>&response_type
 ```
 
 Authorize the application to use your data, and you will be redirected to
-localhost witha token in the URI. Put that token in a file named `refresh_token`
+localhost with a token in the URI. Put that token in a file named `refresh_token`
 in the root folder of the repository and you should be ok!
 
 I plan to automate that process as soon as possible to make it easier for you :)
@@ -100,9 +100,9 @@ I plan to automate that process as soon as possible to make it easier for you :)
 
 ## Running the tests
 
-`cd spotify_api` to get in the library module
+`cd spotify_api` to get in the library module.
 
-You can run the tests with `cargo test`
+You can run the tests with `cargo test`.
 
 ## Built With
 
@@ -131,4 +131,4 @@ Feel free to open pull requests or mail me if you have any question.
 ## License
 
 This project is licensed under the MIT License - see the
-[LICENSE.md](LICENSE.md) file for details
+[LICENSE.md](LICENSE.md) file for details.
