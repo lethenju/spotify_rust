@@ -116,7 +116,7 @@ External crates:
 - `termion` for the text user interface
 - `text_io` for easy user input 
 - `tui` for the text user interface
-- `webbrowser`
+- `webbrowser` for the automated refresh token generation process
 
 ## Contributing
 
