@@ -1,13 +1,14 @@
+extern crate base64;
 extern crate term_painter;
 extern crate tiny_http;
-
-use std::fs::{File, OpenOptions};
-use std::io::Write;
 
 use self::term_painter::Color::*;
 use self::term_painter::ToStyle;
 use self::tiny_http::Server;
+use self::base64::encode;
 use spotify_api::EasyAPI;
+use std::fs::{File, OpenOptions};
+use std::io::Write;
 use std::thread;
 
 pub fn retrieve_tokens(handle: &mut EasyAPI) -> Result<(), std::io::Error> {
@@ -16,17 +17,14 @@ pub fn retrieve_tokens(handle: &mut EasyAPI) -> Result<(), std::io::Error> {
         Red.bold()
             .paint("Automatic token retrieval procedure activated")
     );
-    println!("{}", Blue.paint("Enter the clientid of the application"));
+    println!("{}", Blue.paint("Enter the clientId of the application :"));
     let clientid: String = text_io::read!("{}\n");
     // TODO Only ask secret, and rebuild base64 from that
     println!(
         "{}",
-        Blue.paint("Enter the base64 of the clientid:clientsecret here. A browser will open and ask you to connect to your Spotify Account"));
-    println!(
-        "{}",
-        Blue.paint("You'll have to copy the token code in the URL and to paste it here")
-    );
-    let base64: String = text_io::read!("{}\n");
+        Blue.paint("Enter the clientSecret of the application :"));
+    let clientsecret: String = text_io::read!("{}\n");
+    let base64 = encode(&format!("{}:{}", clientid, clientsecret));
     File::create("base_64_secret").unwrap();
     let mut f = OpenOptions::new()
         .append(true)
