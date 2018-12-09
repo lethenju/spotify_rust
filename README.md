@@ -19,7 +19,7 @@ stage.
 
 ### Prerequisites
 
-Well before you can run there are some prerequisites :
+Well before you can run there are some prerequisites:
 
 - The _Rust_ compiler
 - A _Spotify client id/secret pair_, and a _refresh token_
@@ -111,13 +111,20 @@ You can run the tests with `cargo test`.
 
 ## Built With
 
-External crates :
+External crates:
 
-- `curl` for sending HTTP requests.
-- `serde_json` for JSON parsing.
-- `percent-encoding` to encode search queries in percent encoding.
-- `termion` and `tui` for the text user interface
+- `base64` for encoding the application credentials pair.
 - `clap` for the command line interpreter
+- `curl` for sending HTTP requests.
+- `failure`
+- `percent-encoding` to encode search queries in percent encoding.
+- `serde_json` for JSON parsing.
+- `tiny_http` for the automated refresh token generation process
+- `term-painter` for colorful stdout during the automated refresh token generation process
+- `termion` for the text user interface
+- `text_io` for easy user input 
+- `tui` for the text user interface
+- `webbrowser` for the automated refresh token generation process
 
 ## Contributing
 
