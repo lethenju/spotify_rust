@@ -9,8 +9,8 @@ use self::tiny_http::Server;
 use spotify_api::EasyAPI;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
-use std::thread;
 use std::sync::mpsc;
+use std::thread;
 
 pub fn retrieve_tokens(handle: &mut EasyAPI) -> Result<(), std::io::Error> {
     println!(
@@ -45,18 +45,19 @@ pub fn retrieve_tokens(handle: &mut EasyAPI) -> Result<(), std::io::Error> {
             let code = (&request.url()[7..]).to_string();
             println!("token {}", code.as_str());
             tx.send(code).unwrap();
-            // TODO, store the value for the other thread
-            let response = tiny_http::Response::from_string("Success! You can now close this window!".to_string());
+            let response = tiny_http::Response::from_string(
+                "Success! You can now close this window!".to_string(),
+            );
             let _ = request.respond(response);
             break;
         }
     });
 
     thread_handle.join().unwrap();
-    // TODO, retrieve the value code !from the other thread
-    
 
-    let refresh_token = (*handle).retrieve_refresh_token(base64, rx.recv().unwrap()).unwrap();
+    let refresh_token = (*handle)
+        .retrieve_refresh_token(base64, rx.recv().unwrap())
+        .unwrap();
 
     File::create("refresh_token").unwrap();
     let mut f = OpenOptions::new()
