@@ -165,14 +165,16 @@ impl Command {
         base_64_secret: &str,
         refresh_token: &str,
     ) -> Result<(), std::io::Error> {
-        return self.communicator.refresh(base_64_secret, refresh_token, "");
+        return self.communicator.refresh(base_64_secret, refresh_token);
     }
     pub fn retrieve_refresh_token(
         &mut self,
         base_64_secret: &str,
-        access_token: &str,
+        authorization_code: &str,
     ) -> Result<String, std::io::Error> {
-        self.communicator.refresh(base_64_secret, "", access_token).unwrap();
-        Ok(self.communicator.get_access_token().to_string())
+        Ok(self
+            .communicator
+            .retrieve_refresh_token(base_64_secret, authorization_code)
+            .unwrap())
     }
 }

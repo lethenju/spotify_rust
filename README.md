@@ -47,10 +47,15 @@ https://accounts.spotify.com/authorize/?client_id=<YOUR_CLIENT_ID>&response_type
 ```
 
 Authorize the application to use your data, and you will be redirected to
-localhost with a token in the URI. Put that token in a file named `refresh_token`
-in the root folder of the repository and you should be ok!
+localhost with a token in the URI. 
+Then you will have to POST the token in a specific request to finally have your refresh token.
 
-I plan to automate that process as soon as possible to make it easier for you :)
+All the procedure is documented here : 
+https://developer.spotify.com/documentation/general/guides/authorization-guide/
+
+
+An automated process has been developed for the application. You will only have to enter the cliend ID and secret, then log on in a friendly interface while all the background token retrieval process is going on.
+
 
 ## Documentation
 

@@ -111,33 +111,22 @@ impl Communicator {
      */
     pub fn refresh(
         &mut self,
-        _base64_secret: &str,
-        _refresh_token: &str,
-        code: &str,
+        base64_secret: &str,
+        refresh_token: &str,
     ) -> Result<(), std::io::Error> {
-        //println!("Refreshing access token");
         let mut data = Vec::new();
         {
             self.easy_handle.post(true).unwrap();
-            if code.len() > 0 {
-                self.easy_handle
-                    .post_fields_copy(
-                        &format!("grant_type=authorization_code&code={}&redirect_uri=http%3A%2F%2Flocalhost:8000%2F", code).as_bytes(),
-
-                    ).unwrap();
-            } else {
-                self.easy_handle
-                    .post_fields_copy(
-                        &format!("grant_type=refresh_token&refresh_token={}", _refresh_token)
-                            .as_bytes(),
-                    ).unwrap();
-            }
+            self.easy_handle
+                .post_fields_copy(
+                    &format!("grant_type=refresh_token&refresh_token={}", refresh_token).as_bytes(),
+                ).unwrap();
 
             self.easy_handle
                 .url("https://accounts.spotify.com/api/token")
                 .unwrap();
             let mut list = List::new();
-            let _request2 = format!("Authorization: Basic {}", _base64_secret);
+            let _request2 = format!("Authorization: Basic {}", base64_secret);
             list.append(&_request2).unwrap();
             self.easy_handle.http_headers(list).unwrap();
             let mut transfer = self.easy_handle.transfer();
@@ -158,7 +147,7 @@ impl Communicator {
             Ok(200) => {}
             Ok(204) => {}
             _ => {
-                println!("{}",str::from_utf8(&data).unwrap());
+                println!("{}", str::from_utf8(&data).unwrap());
                 return Err(Error::new(
                     ErrorKind::Other,
                     format!("{:?}", self.easy_handle.response_code().unwrap()),
@@ -174,10 +163,70 @@ impl Communicator {
         let mut result = v["access_token"].to_string();
         result = result[1..].to_string();
         result.pop();
-        //println!("Ok ! Access token : {}",result.as_str());
         self.access_token = result;
         Ok(())
     }
+    /// retrieves a refresh token by a authorization code
+    pub fn retrieve_refresh_token(
+        &mut self,
+        base64_secret: &str,
+        code: &str,
+    ) -> Result<String, std::io::Error> {
+        let mut data = Vec::new();
+        {
+            self.easy_handle.post(true).unwrap();
+            self.easy_handle
+                .post_fields_copy(
+                    &format!(
+                        "grant_type=authorization_code&code={}&redirect_uri=http%3A%2F%2Flocalhost:8000%2F",
+                        code
+                    ).as_bytes(),
+                ).unwrap();
+
+            self.easy_handle
+                .url("https://accounts.spotify.com/api/token")
+                .unwrap();
+            let mut list = List::new();
+            let _request2 = format!("Authorization: Basic {}", base64_secret);
+            list.append(&_request2).unwrap();
+            self.easy_handle.http_headers(list).unwrap();
+            let mut transfer = self.easy_handle.transfer();
+            transfer
+                .write_function(|new_data| {
+                    data.extend_from_slice(new_data);
+                    Ok(new_data.len())
+                }).unwrap();
+            match transfer.perform() {
+                Ok(()) => {}
+                _ => {
+                    println!("Connection error");
+                    return Err(Error::new(ErrorKind::NotConnected, "Connection error"));
+                }
+            }
+        }
+        match self.easy_handle.response_code() {
+            Ok(200) => {}
+            Ok(204) => {}
+            _ => {
+                println!("{}", str::from_utf8(&data).unwrap());
+                return Err(Error::new(
+                    ErrorKind::Other,
+                    format!("{:?}", self.easy_handle.response_code().unwrap()),
+                ));
+            }
+        }
+        self.easy_handle.reset();
+
+        let s = str::from_utf8(&data).unwrap();
+
+        let v: Value = serde_json::from_str(s).unwrap();
+
+        let mut result = v["refresh_token"].to_string();
+        result = result[1..].to_string();
+        result.pop();
+        Ok(result)
+    }
+
     pub fn get_access_token(&self) -> &str {
         return self.access_token.as_str();
     }

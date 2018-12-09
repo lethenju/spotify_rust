@@ -30,6 +30,7 @@ fn main() -> Result<(), failure::Error> {
         Ok(()) => {}
         Err(_err) => {
             token_retrieval::retrieve_tokens(&mut easy_api).unwrap();
+            easy_api.refresh().unwrap();
         }
     }
 
