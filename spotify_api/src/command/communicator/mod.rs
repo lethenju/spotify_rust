@@ -4,9 +4,11 @@
     using Curl. 
 */
 extern crate curl;
+extern crate percent_encoding;
 extern crate serde_json;
 
 pub use self::curl::easy::{Easy, List};
+use self::percent_encoding::{utf8_percent_encode, DEFAULT_ENCODE_SET};
 use self::serde_json::Value;
 use std::io::{Error, ErrorKind, Read};
 use std::str;
@@ -120,14 +122,14 @@ impl Communicator {
             if code.len() > 0 {
                 self.easy_handle
                     .post_fields_copy(
-                        &format!("grant_type=authorization_code&code={}&redirect_uri=http://localhost/", code).as_bytes(),
+                        &format!("grant_type=authorization_code&code={}&redirect_uri=http%3A%2F%2Flocalhost:8000%2F", code).as_bytes(),
+
                     ).unwrap();
             } else {
                 self.easy_handle
                     .post_fields_copy(
-                        &format!(
-                            "grant_type=refresh_token&refresh_token={}", _refresh_token
-                        ).as_bytes(),
+                        &format!("grant_type=refresh_token&refresh_token={}", _refresh_token)
+                            .as_bytes(),
                     ).unwrap();
             }
 
@@ -156,6 +158,7 @@ impl Communicator {
             Ok(200) => {}
             Ok(204) => {}
             _ => {
+                println!("{}",str::from_utf8(&data).unwrap());
                 return Err(Error::new(
                     ErrorKind::Other,
                     format!("{:?}", self.easy_handle.response_code().unwrap()),
