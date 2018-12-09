@@ -3,7 +3,6 @@
     @mod EasyAPI : handles the whole Spotify API bindings,
     and the API rights
 */
-extern crate failure;
 extern crate serde_json;
 
 mod command;
