@@ -1,6 +1,20 @@
+# _Disclaimer_
+
+You are in a development branch, not the master ! This code has little chance to
+run, and it is strongly discouraged to use this branch for something else than
+development.
+
+This branch is created to organize a major evolution of the API. When the branch
+will merge in master, we will have control over the complete spotify API in a
+way nicer way.
+
+I used the model of the rspotify project, as it is MIT and there is very little
+fun to copy the data model ourselves from the API documentation. :)
+
 # Spotify Rust
 
-`spotify_rust` can control your Spotify playback without having to use your mouse.
+`spotify_rust` can control your Spotify playback without having to use your
+mouse.
 
 `spotify_rust` is made of two elements :
 
@@ -47,61 +61,19 @@ https://accounts.spotify.com/authorize/?client_id=<YOUR_CLIENT_ID>&response_type
 ```
 
 Authorize the application to use your data, and you will be redirected to
-localhost with a token in the URI. 
-Then you will have to POST the token in a specific request to finally have your refresh token.
+localhost with a token in the URI. Then you will have to POST the token in a
+specific request to finally have your refresh token.
 
-All the procedure is documented here : 
+All the procedure is documented here :
 https://developer.spotify.com/documentation/general/guides/authorization-guide/
 
-
-An automated process has been developed for the application. You will only have to enter the cliend ID and secret, then log on in a friendly interface while all the background token retrieval process is going on.
-
+An automated process has been developed for the application. You will only have
+to enter the cliend ID and secret, then log on in a friendly interface while all
+the background token retrieval process is going on.
 
 ## Documentation
 
 ### Data structures
-
-#### Album
-
-| member | type                 | implemented ? |
-| ------ | -------------------- | ------------- |
-| name   | `String`             | YES           |
-| id     | `String`             | YES           |
-| tracks | `Option<Vec<Track>>` | PARTLY        |
-
-#### Track
-
-| member | type             | implemented ? |
-| ------ | ---------------- | ------------- |
-| name   | `String`         | YES           |
-| id     | `String`         | YES           |
-| artist | `Option<Artist>` | PARTLY        |
-
-#### Artist
-
-| member | type                 | implemented ? |
-| ------ | -------------------- | ------------- |
-| name   | `String`             | YES           |
-| id     | `String`             | YES           |
-| albums | `Option<Vec<Album>>` | PARTLY        |
-
-#### Playlist
-
-| member | type                 | implemented ? |
-| ------ | -------------------- | ------------- |
-| name   | `String`             | YES           |
-| id     | `String`             | YES           |
-| tracks | `Option<Vec<Track>>` | PARTLY        |
-
-### APIs
-
-#### EasyAPI handle
-
-#### Refreshing tokens
-
-#### Player
-
-#### Library
 
 ## Running the tests
 
@@ -120,9 +92,10 @@ External crates:
 - `percent-encoding` to encode search queries in percent encoding.
 - `serde_json` for JSON parsing.
 - `tiny_http` for the automated refresh token generation process
-- `term-painter` for colorful stdout during the automated refresh token generation process
+- `term-painter` for colorful stdout during the automated refresh token
+  generation process
 - `termion` for the text user interface
-- `text_io` for easy user input 
+- `text_io` for easy user input
 - `tui` for the text user interface
 - `webbrowser` for the automated refresh token generation process
 
