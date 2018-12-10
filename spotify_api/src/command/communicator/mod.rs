@@ -8,7 +8,6 @@ extern crate percent_encoding;
 extern crate serde_json;
 
 pub use self::curl::easy::{Easy, List};
-use self::percent_encoding::{utf8_percent_encode, DEFAULT_ENCODE_SET};
 use self::serde_json::Value;
 use std::io::{Error, ErrorKind, Read};
 use std::str;

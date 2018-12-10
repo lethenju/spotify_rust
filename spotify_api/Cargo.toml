@@ -8,5 +8,12 @@ authors = ["Julien LE THENO"]
 [dependencies]
 curl = "0.4.18"
 serde_json = "1.0"
+serde_derive = "1.0.81"
+serde = "1.0"
 percent-encoding = "1.0.1"
 failure = "0.1"
+
+
+[dependencies.chrono]
+features = ["serde", "rustc-serialize"]
+version = "0.4"
