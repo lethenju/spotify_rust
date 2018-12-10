@@ -76,21 +76,11 @@ impl EasyAPI {
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
         for x in 0..size {
-            /*let mut album_name = v["items"][x]["album"]["name"].to_string(); // just getting the first result here
-            album_name = album_name[1..].to_string(); // removing last '"'
-            album_name.pop(); // removing first '"'
-
-            let mut album_id = v["items"][x]["album"]["id"].to_string(); // just getting the first result here
-            album_id = album_id[1..].to_string(); // removing last '"'
-            album_id.pop(); // removing first '"'
-*/
-
             final_result.push(serde_json::from_str(
                 &serde_json::to_string(&v["items"][x]["album"]).unwrap(),
             )?);
         }
-
-        unimplemented!();
+        Ok(())
     }
 
     ///  Get the track names from a given album id
@@ -321,8 +311,8 @@ impl EasyAPI {
     /// Plays a track in a context ( for now just Album..)
     pub fn play_track(
         &mut self,
-        track: &model::track::SimplifiedTrack,
-        context: Option<&model::album::SimplifiedAlbum>,
+        track: &model::track::FullTrack,
+        context: Option<&model::album::FullAlbum>,
     ) -> Result<(), std::io::Error> {
         let error = {
             match context {
