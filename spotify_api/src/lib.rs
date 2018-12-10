@@ -53,7 +53,7 @@ impl EasyAPI {
     ///  Get all the current user's albums
     pub fn get_my_albums(
         &mut self,
-        final_result: &mut Vec<model::album::FullAlbum>,
+        final_result: &mut Vec<model::album::SimplifiedAlbum>,
     ) -> Result<(), std::io::Error> {
         for i in 0..5 {
             // SUPER dirty -> TODO get number of album to know how many chunks to get.
@@ -65,7 +65,7 @@ impl EasyAPI {
     pub fn get_my_albums_chunk(
         &mut self,
         offset: u16,
-        final_result: &mut Vec<model::album::FullAlbum>,
+        final_result: &mut Vec<model::album::SimplifiedAlbum>,
     ) -> Result<(), std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_my_albums(offset, &mut result);
@@ -87,7 +87,7 @@ impl EasyAPI {
     pub fn get_tracks_from_album(
         &mut self,
         id_album: &str,
-    ) -> Result<Vec<model::track::FullTrack>, std::io::Error> {
+    ) -> Result<Vec<model::track::SimplifiedTrack>, std::io::Error> {
         let mut result = String::new();
         let mut final_result = Vec::new();
         match self.command.get_tracks_from_album(id_album, &mut result) {
@@ -98,9 +98,9 @@ impl EasyAPI {
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
         for x in 0..size {
-            final_result.push(serde_json::from_str(
-                &serde_json::to_string(&v["items"][x]).unwrap(),
-            )?);
+             final_result.push(serde_json::from_str(
+                 &serde_json::to_string(&v["items"][x]).unwrap(),
+             )?);
         }
         Ok(final_result)
     }
@@ -110,7 +110,7 @@ impl EasyAPI {
     pub fn search_playlist(
         &mut self,
         search: &str,
-    ) -> Result<Vec<model::playlist::FullPlaylist>, std::io::Error> {
+    ) -> Result<Vec<model::playlist::SimplifiedPlaylist>, std::io::Error> {
         let mut result = String::new();
         let mut final_result = Vec::new();
         match self.command.search(search, "playlist", &mut result) {
@@ -132,7 +132,7 @@ impl EasyAPI {
     pub fn search_album(
         &mut self,
         search: &str,
-    ) -> Result<Vec<model::album::FullAlbum>, std::io::Error> {
+    ) -> Result<Vec<model::album::SimplifiedAlbum>, std::io::Error> {
         let mut result = String::new();
         let mut final_result = Vec::new();
 
@@ -156,7 +156,7 @@ impl EasyAPI {
     pub fn search_track(
         &mut self,
         search: &str,
-    ) -> Result<Vec<model::track::FullTrack>, std::io::Error> {
+    ) -> Result<Vec<model::track::SimplifiedTrack>, std::io::Error> {
         let mut result = String::new();
         let mut final_result = Vec::new();
 
@@ -258,8 +258,8 @@ impl EasyAPI {
     /// Plays a track in a context ( for now just Album..)
     pub fn play_track(
         &mut self,
-        track: &model::track::FullTrack,
-        context: Option<&model::album::FullAlbum>,
+        track: &model::track::SimplifiedTrack,
+        context: Option<&model::album::SimplifiedAlbum>,
     ) -> Result<(), std::io::Error> {
         let error = {
             match context {

@@ -9,13 +9,13 @@ use tui::layout::Rect;
 
 pub struct Albums {
     pub size: Rect,
-    pub albums: Vec<spotify_api::model::album::FullAlbum>,
+    pub albums: Vec<spotify_api::model::album::SimplifiedAlbum>,
     pub selected: usize,
     pub active: bool
 }
 
 impl<'a> Albums {
-    pub fn new(_albums: Vec<spotify_api::model::album::FullAlbum>) -> Albums {
+    pub fn new(_albums: Vec<spotify_api::model::album::SimplifiedAlbum>) -> Albums {
         Albums {
             size: Rect::default(),
             albums: _albums,
@@ -23,7 +23,7 @@ impl<'a> Albums {
             active: true,
         }
     }
-    pub fn add_albums(&mut self,_albums:&mut Vec<spotify_api::model::album::FullAlbum>) {
+    pub fn add_albums(&mut self,_albums:&mut Vec<spotify_api::model::album::SimplifiedAlbum>) {
         self.albums.append(_albums);
     }
 
@@ -34,7 +34,7 @@ impl<'a> Albums {
             None
         }
     }
-    pub fn get_selected_album(&self) -> Option<&spotify_api::model::album::FullAlbum> {
+    pub fn get_selected_album(&self) -> Option<&spotify_api::model::album::SimplifiedAlbum> {
         Some(&self.albums[self.selected])
     }
     pub fn advance(&mut self) {}
@@ -42,7 +42,7 @@ impl<'a> Albums {
 
 pub struct Tracks {
     pub size: Rect,
-    pub tracks: Vec<spotify_api::model::track::FullTrack>,
+    pub tracks: Vec<spotify_api::model::track::SimplifiedTrack>,
     pub selected: usize,
     pub active: bool,
 }
@@ -56,11 +56,10 @@ impl<'a> Tracks {
         }
     }
 
-    pub fn add_tracks(&mut self, _tracks: &mut Vec<spotify_api::model::track::FullTrack>) {
+    pub fn add_tracks(&mut self, _tracks: &mut Vec<spotify_api::model::track::SimplifiedTrack>) {
         self.tracks.append(_tracks);
     }
     pub fn clear_tracks(&mut self) {
-        //self.items.remove(self.items.len());
         self.tracks.clear();
     }
 
@@ -71,7 +70,7 @@ impl<'a> Tracks {
             None
         }
     }
-    pub fn get_selected_track(&self) -> Option<&spotify_api::model::track::FullTrack> {
+    pub fn get_selected_track(&self) -> Option<&spotify_api::model::track::SimplifiedTrack> {
         if self.active{
             Some(&self.tracks[self.selected])
         } else {
