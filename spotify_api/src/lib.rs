@@ -98,9 +98,9 @@ impl EasyAPI {
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
         for x in 0..size {
-             final_result.push(serde_json::from_str(
-                 &serde_json::to_string(&v["items"][x]).unwrap(),
-             )?);
+            final_result.push(serde_json::from_str(
+                &serde_json::to_string(&v["items"][x]).unwrap(),
+            )?);
         }
         Ok(final_result)
     }
@@ -299,15 +299,17 @@ impl EasyAPI {
             .command
             .refresh(base_64_secret.as_str(), refresh_token.as_str());
     }
-
+    /// Retrieves a refresh token
+    /// takes the base64 of <clientid:clientsecret>
+    /// and an authorization code
     pub fn retrieve_refresh_token(
         &mut self,
         base_64_secret: String,
-        access_token: String,
+        authorization_code: String,
     ) -> Result<String, std::io::Error> {
         let refresh_token = self
             .command
-            .retrieve_refresh_token(base_64_secret.as_str(), access_token.as_str());
+            .retrieve_refresh_token(base_64_secret.as_str(), authorization_code.as_str());
         Ok(refresh_token.unwrap())
     }
 }
