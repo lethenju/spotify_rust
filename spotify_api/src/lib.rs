@@ -89,7 +89,7 @@ impl EasyAPI {
         id_album: &str,
     ) -> Result<Vec<model::track::FullTrack>, std::io::Error> {
         let mut result = String::new();
-       // let mut final_result = Vec::new();
+        let mut final_result = Vec::new();
         match self.command.get_tracks_from_album(id_album, &mut result) {
             Ok(_ok) => {}
             Err(error) => return Err(error),
@@ -98,59 +98,43 @@ impl EasyAPI {
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
         for x in 0..size {
-            /*
-            let mut track_name = v["items"][x]["name"].to_string(); // just getting the first result here
-            track_name = track_name[1..].to_string(); // removing last '"'
-            track_name.pop(); // removing first '"'
-
-            let mut track_id = v["items"][x]["id"].to_string(); // just getting the first result here
-            track_id = track_id[1..].to_string(); // removing last '"'
-            track_id.pop(); // removing first '"'
-            final_result.push(Track {
-                name: track_name,
-                id: track_id,
-                artist: None,
-            });
-            */
+            final_result.push(serde_json::from_str(
+                &serde_json::to_string(&v["items"][x]).unwrap(),
+            )?);
         }
-
-        unimplemented!();
+        Ok(final_result)
     }
 
     /// Searches for playlists with the name "search" in it.
     /// Stores the results in a reference to a vector of Playlist on "final_result"
-    pub fn search_playlist(&mut self, search: &str) -> Result<Vec<model::playlist::FullPlaylist>, std::io::Error> {
+    pub fn search_playlist(
+        &mut self,
+        search: &str,
+    ) -> Result<Vec<model::playlist::FullPlaylist>, std::io::Error> {
         let mut result = String::new();
-        //let mut final_result = Vec::new();
+        let mut final_result = Vec::new();
         match self.command.search(search, "playlist", &mut result) {
             Ok(_ok) => {}
             Err(error) => return Err(error),
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["playlists"]["items"].as_array().unwrap().len();
-        for x in 0..size { /*
-            let mut playlist_name = v["playlists"]["items"][x]["name"].to_string();
-            playlist_name = playlist_name[1..].to_string(); // removing last '"'
-            playlist_name.pop(); // removing first '"'
-
-            let mut playlist_id = v["playlists"]["items"][x]["id"].to_string();
-            playlist_id = playlist_id[1..].to_string(); // removing last '"'
-            playlist_id.pop(); // removing first '"'
-
-            final_result.push(Playlist {
-                name: playlist_name,
-                id: playlist_id,
-                tracks: None, // TODO add tracks
-            })*/
+        for x in 0..size {
+            final_result.push(serde_json::from_str(
+                &serde_json::to_string(&v["playlists"]["items"][x]).unwrap(),
+            )?);
         }
-        unimplemented!();
+        Ok(final_result)
     }
 
     /// Searches for albums with the name "search" in it.
     /// Stores the results in a reference to a vector of Albums on "final_result"
-    pub fn search_album(&mut self, search: &str) -> Result<Vec<model::album::FullAlbum>, std::io::Error> {
+    pub fn search_album(
+        &mut self,
+        search: &str,
+    ) -> Result<Vec<model::album::FullAlbum>, std::io::Error> {
         let mut result = String::new();
-        //let mut final_result = Vec::new();
+        let mut final_result = Vec::new();
 
         match self.command.search(search, "album", &mut result) {
             Ok(_ok) => {}
@@ -158,29 +142,23 @@ impl EasyAPI {
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["albums"]["items"].as_array().unwrap().len();
-        for x in 0..size { /*
-            let mut album_name = v["albums"]["items"][x]["name"].to_string();
-            album_name = album_name[1..].to_string(); // removing last '"'
-            album_name.pop(); // removing first '"'
-
-            let mut album_id = v["albums"]["items"][x]["id"].to_string();
-            album_id = album_id[1..].to_string(); // removing last '"'
-            album_id.pop(); // removing first '"'
-
-            final_result.push(Album {
-                name: album_name,
-                id: album_id,
-                tracks: None,
-            });*/
+        for x in 0..size {
+            final_result.push(serde_json::from_str(
+                &serde_json::to_string(&v["albums"]["items"][x]).unwrap(),
+            )?);
         }
-        unimplemented!();
+
+        Ok(final_result)
     }
 
     /// Searches for tracks with the name "search" in it.
     /// Stores the results in a reference to a vector of Tracks on "final_result"
-    pub fn search_track(&mut self, search: &str) -> Result<Vec<model::track::FullTrack>, std::io::Error> {
+    pub fn search_track(
+        &mut self,
+        search: &str,
+    ) -> Result<Vec<model::track::FullTrack>, std::io::Error> {
         let mut result = String::new();
-        //let mut final_result = Vec::new();
+        let mut final_result = Vec::new();
 
         match self.command.search(search, "track", &mut result) {
             Ok(_ok) => {}
@@ -188,30 +166,23 @@ impl EasyAPI {
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["tracks"]["items"].as_array().unwrap().len();
-        for x in 0..size {/*
-            let mut track_name = v["tracks"]["items"][x]["name"].to_string();
-            track_name = track_name[1..].to_string(); // removing last '"'
-            track_name.pop(); // removing first '"'
-
-            let mut track_id = v["tracks"]["item/][x]["id"].to_string();
-            track_id = track_id[1..].to_string(); // removing last '"'
-            track_id.pop(); // removing first '"'
-
-            final_result.push(Track {
-                name: track_name,
-                id: track_id,
-                artist: None,
-            });*/
+        for x in 0..size {
+            final_result.push(serde_json::from_str(
+                &serde_json::to_string(&v["tracks"]["items"][x]).unwrap(),
+            )?);
         }
 
-        unimplemented!();
+        Ok(final_result)
     }
 
     /// Searches for artists with the name "search" in it.
     /// Stores the results in a reference to a vector of Artists on "final_result"
-    pub fn search_artist(&mut self, search: &str) -> Result<Vec<model::artist::FullArtist>, std::io::Error> {
+    pub fn search_artist(
+        &mut self,
+        search: &str,
+    ) -> Result<Vec<model::artist::FullArtist>, std::io::Error> {
         let mut result = String::new();
-        //let mut final_result = Vec::new();
+        let mut final_result = Vec::new();
         match self.command.search(search, "artist", &mut result) {
             Ok(_ok) => {}
             Err(error) => return Err(error),
@@ -219,23 +190,12 @@ impl EasyAPI {
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         let size = v["artists"]["items"].as_array().unwrap().len();
         for x in 0..size {
-            /*
-            let mut artist_name = v["artists"]["items"][x]["name"].to_string();
-            artist_name = artist_name[1..].to_string(); // removing last '"'
-            artist_name.pop(); // removing first '"'
-
-            let mut artist_id = v["artists"]["items"][x]["id"].to_string();
-            artist_id = artist_id[1..].to_string(); // removing last '"'
-            artist_id.pop(); // removing first '"'
-
-            final_result.push(Artist {
-                name: artist_name,
-                id: artist_id,
-                albums: None, // TODO add albums
-            });*/
+            final_result.push(serde_json::from_str(
+                &serde_json::to_string(&v["artists"]["items"][x]).unwrap(),
+            )?);
         }
 
-        unimplemented!();
+        Ok(final_result)
     }
 
     /// Pauses the playback.
@@ -256,7 +216,9 @@ impl EasyAPI {
 
     /// Gets the currently playing artist on the final_result argument
     /// final_result setted to "" if no track is playing
-    pub fn get_currently_playing_artist(&mut self) -> Result<Option<model::artist::SimplifiedArtist>, std::io::Error> {
+    pub fn get_currently_playing_artist(
+        &mut self,
+    ) -> Result<Option<model::artist::SimplifiedArtist>, std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_currently_playing(&mut result);
         match errno {
@@ -265,27 +227,20 @@ impl EasyAPI {
         }
 
         if result.len() != 0 {
-            /*
             let v: Value = serde_json::from_str(result.as_str()).unwrap();
-            let mut artist_name = v["item"]["artists"][0]["name"].to_string();
-            artist_name = artist_name[1..].to_string(); // removing last '"'
-            artist_name.pop(); // removing first '"'
-            let mut artist_id = v["item"]["artists"][0]["id"].to_string();
-            artist_id = artist_id[1..].to_string(); // removing last '"'
-            artist_id.pop(); // removing first '"'
-
-            return Ok(Some(Artist {
-                name: artist_name,
-                id: artist_id,
-                albums: None, // TODO Add artist
-            }));*/
+            return Ok(Some(
+                serde_json::from_str(&serde_json::to_string(&v["item"]["artist"][0]).unwrap())
+                    .unwrap(),
+            ));
         }
         Ok(None)
     }
 
     /// Gets the currently playing track on the final_result argument
     /// final_result setted to "" if no track is playing
-    pub fn get_currently_playing_track(&mut self) -> Result<Option<model::track::FullTrack>, std::io::Error> {
+    pub fn get_currently_playing_track(
+        &mut self,
+    ) -> Result<Option<model::track::FullTrack>, std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_currently_playing(&mut result);
         match errno {
@@ -293,18 +248,10 @@ impl EasyAPI {
             _ => {}
         }
         if result.len() != 0 {
-            /*let v: Value = serde_json::from_str(result.as_str()).unwrap();
-            let mut track_name = v["item"]["name"].to_string();
-            track_name = track_name[1..].to_string(); // removing last '"'
-            track_name.pop(); // removing first '"'
-            let mut track_id = v["item"]["name"].to_string();
-            track_id = track_id[1..].to_string(); // removing last '"'
-            track_id.pop(); // removing first '"'
-            return Ok(Some(Track {
-                name: track_name,
-                id: track_id,
-                artist: None, // TODO Add artist
-            })) */
+            let v: Value = serde_json::from_str(result.as_str()).unwrap();
+            return Ok(Some(
+                serde_json::from_str(&serde_json::to_string(&v["item"]).unwrap()).unwrap(),
+            ));
         }
         Ok(None)
     }
