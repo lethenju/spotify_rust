@@ -37,8 +37,8 @@ fn main() -> Result<(), failure::Error> {
     let mut albums_data = Vec::new();
     easy_api.get_my_albums_chunk(0, &mut albums_data).unwrap();
 
-    let mut current_artist = easy_api.get_currently_playing_artist().unwrap();
-    let mut current_track = easy_api.get_currently_playing_track().unwrap();
+    let mut current_artist = get_current_artist(&mut easy_api);
+    let mut current_track = get_current_track(&mut easy_api);
 
     // Terminal initialization
     let stdout = io::stdout().into_raw_mode()?;
@@ -207,11 +207,33 @@ fn main() -> Result<(), failure::Error> {
                 _ => {}
             },
             Event::Tick => {
-                current_artist = easy_api.get_currently_playing_artist().unwrap();
-                current_track = easy_api.get_currently_playing_track().unwrap();
+                current_artist = get_current_artist(&mut easy_api);
+                current_track = get_current_track(&mut easy_api);
             }
         }
     }
 
     Ok(())
+}
+
+fn get_current_artist(handle: &mut EasyAPI) -> spotify_api::Artist {
+    match handle.get_currently_playing_artist().unwrap() {
+        Some(artist) => artist,
+        None => spotify_api::Artist {
+            name: "no artist".to_string(),
+            id: "".to_string(),
+            albums: None,
+        },
+    }
+}
+
+fn get_current_track(handle: &mut EasyAPI) -> spotify_api::Track {
+    match handle.get_currently_playing_track().unwrap() {
+        Some(track) => track,
+        None => spotify_api::Track {
+            name: "no track".to_string(),
+            id: "".to_string(),
+            artist: None,
+        },
+    }
 }

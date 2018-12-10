@@ -276,7 +276,7 @@ impl EasyAPI {
 
     /// Gets the currently playing artist on the final_result argument
     /// final_result setted to "" if no track is playing
-    pub fn get_currently_playing_artist(&mut self) -> Result<Artist, std::io::Error> {
+    pub fn get_currently_playing_artist(&mut self) -> Result<Option<Artist>, std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_currently_playing(&mut result);
         match errno {
@@ -293,21 +293,18 @@ impl EasyAPI {
             artist_id = artist_id[1..].to_string(); // removing last '"'
             artist_id.pop(); // removing first '"'
 
-            return Ok(Artist {
+            return Ok(Some(Artist {
                 name: artist_name,
                 id: artist_id,
                 albums: None, // TODO Add artist
-            });
+            }));
         }
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            "No track playing",
-        ));
+        Ok(None)
     }
 
     /// Gets the currently playing track on the final_result argument
     /// final_result setted to "" if no track is playing
-    pub fn get_currently_playing_track(&mut self) -> Result<Track, std::io::Error> {
+    pub fn get_currently_playing_track(&mut self) -> Result<Option<Track>, std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_currently_playing(&mut result);
         match errno {
@@ -322,16 +319,13 @@ impl EasyAPI {
             let mut track_id = v["item"]["name"].to_string();
             track_id = track_id[1..].to_string(); // removing last '"'
             track_id.pop(); // removing first '"'
-            return Ok(Track {
+            return Ok(Some(Track {
                 name: track_name,
                 id: track_id,
                 artist: None, // TODO Add artist
-            });
+            }));
         }
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            "No track playing",
-        ));
+        Ok(None)
     }
     /// Plays a track in a context ( for now just Album..)
     pub fn play_track(
