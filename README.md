@@ -1,16 +1,3 @@
-# _Disclaimer_
-
-You are in a development branch, not the master ! This code has little chance to
-run, and it is strongly discouraged to use this branch for something else than
-development.
-
-This branch is created to organize a major evolution of the API. When the branch
-will merge in master, we will have control over the complete spotify API in a
-way nicer way.
-
-I used the model of the rspotify project, as it is MIT and there is very little
-fun to copy the data model ourselves from the API documentation. :)
-
 # Spotify Rust
 
 `spotify_rust` can control your Spotify playback without having to use your
@@ -18,10 +5,18 @@ mouse.
 
 `spotify_rust` is made of two elements :
 
-- An API for Spotify, controlling playback, searching for tracks, albums or
-  playlists, and much more.
-- A client in text user interface, directly in your terminal, to browse your
-  spotify Library and play tracks.
+- An API for Spotify, `spotify_api` , controlling playback, searching for
+  tracks, albums or playlists, and much more.
+- A client in text user interface, `spotify_rust`, directly in your terminal, to
+  browse your spotify Library and play tracks.
+
+## CHANGELOG
+
+### spotify_api
+
+Version 0.0.4 :
+
+- Added the whole data model from the Spotify API.
 
 ## Getting Started
 
@@ -74,6 +69,16 @@ the background token retrieval process is going on.
 ## Documentation
 
 ### Data structures
+
+The data structures are the same as in the Spotify API , available
+[here](https://developer.spotify.com/web-api/object-model)
+
+You can find the rust structures in the `model` directory, under
+`spotify_api/src/model`.
+
+### APIs
+
+TODO
 
 ## Running the tests
 
