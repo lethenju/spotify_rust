@@ -10,6 +10,31 @@ mouse.
 - A client in text user interface, `spotify_rust`, directly in your terminal, to
   browse your spotify Library and play tracks.
 
+## Example
+
+```rust
+// Creating the handle
+let mut handle = EasyAPI::new();
+
+// Command line token retrieval procedure
+token_retrieval::retrieve_tokens(&mut easy_api).unwrap();
+
+// Getting a refresh token
+handle.refresh().unwrap();
+
+// Getting the currently playing track and artist names, if there is a track playing right now
+let current_artist_name = match easy_api.get_currently_playing_artist().unwrap() {
+    Some(artist) => artist.name,
+    None => "".to_string(),
+};
+let current_track_name = match easy_api.get_currently_playing_track().unwrap() {
+    Some(track) => track.name,
+    None => "".to_string(),
+};
+
+println!("You are now listening to {} by {}", current_track_name.as_str(), current_artist_name.as_str());
+```
+
 ## Getting Started
 
 Just clone the repository and `cargo run`!
@@ -44,7 +69,9 @@ a browser and paste that URL in your navigation bar with <YOUR_CLIENT_ID> as
 your client ID.
 
 ```
+
 https://accounts.spotify.com/authorize/?client_id=<YOUR_CLIENT_ID>&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%2Fcallback&scope=user-read-private%20user-read-email%20playlist-read-private%20playlist-read-collaborative%20playlist-modify-public%20playlist-modify-private%20user-follow-modify%20user-follow-read%20user-library-read%20user-library-modify%20user-read-private%20user-read-birthdate%20user-read-email%20user-top-read%20ugc-image-upload%20user-read-playback-state%20user-modify-playback-state%20user-read-currently-playing%20user-read-recently-played
+
 ```
 
 Authorize the application to use your data, and you will be redirected to
@@ -60,7 +87,8 @@ the background token retrieval process is going on.
 
 ## Documentation
 
-Run `cargo doc --open` to build and open the documentation on the browser directly.
+Run `cargo doc --open` to build and open the documentation on the browser
+directly.
 
 The data structures are the same as in the Spotify API , available
 [here](https://developer.spotify.com/web-api/object-model)
@@ -100,5 +128,9 @@ Please read the [Contributing file](CONTRIBUTING.md) before contributing.
 
 ## License
 
-This project is licensed under the MIT License - see the
-[LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
+for details.
+
+```
+
+```
