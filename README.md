@@ -94,17 +94,9 @@ External crates:
 
 ## Contributing
 
-As I would love to have contributors, the project is unfortunately not mature
-enough to be on the hands of the masses..
+Thank you for your support !
 
-I would rather finish to get a strong basis on which contributors could expand
-the software.
-
-Feel free to open pull requests or mail me if you have any question.
-
-## Authors
-
-- **Julien LE THENO** - _Initial work_ - [lethenju](https://github.com/lethenju)
+Please read the [Contributing file](CONTRIBUTING.md) before contributing.
 
 ## License
 
