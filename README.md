@@ -10,14 +10,6 @@ mouse.
 - A client in text user interface, `spotify_rust`, directly in your terminal, to
   browse your spotify Library and play tracks.
 
-## CHANGELOG
-
-### spotify_api
-
-Version 0.0.4 :
-
-- Added the whole data model from the Spotify API.
-
 ## Getting Started
 
 Just clone the repository and `cargo run`!
@@ -68,17 +60,13 @@ the background token retrieval process is going on.
 
 ## Documentation
 
-### Data structures
+Run `cargo doc --open` to build and open the documentation on the browser directly.
 
 The data structures are the same as in the Spotify API , available
 [here](https://developer.spotify.com/web-api/object-model)
 
 You can find the rust structures in the `model` directory, under
 `spotify_api/src/model`.
-
-### APIs
-
-TODO
 
 ## Running the tests
 
