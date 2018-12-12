@@ -10,14 +10,11 @@ mouse.
 - A client in text user interface, `spotify_rust`, directly in your terminal, to
   browse your spotify Library and play tracks.
 
-## Example
+## Example for using the API
 
 ```rust
 // Creating the handle
 let mut handle = EasyAPI::new();
-
-// Command line token retrieval procedure
-token_retrieval::retrieve_tokens(&mut easy_api).unwrap();
 
 // Getting a refresh token
 handle.refresh().unwrap();
@@ -130,7 +127,3 @@ Please read the [Contributing file](CONTRIBUTING.md) before contributing.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 for details.
-
-```
-
-```
