@@ -41,8 +41,10 @@ impl EasyAPI {
         Ok(None)
     }
 
-    /// Gets the currently playing track on the final_result argument
-    /// final_result setted to "" if no track is playing
+    /// Gets the currently playing track as a FullTrack object.
+    ///
+    /// Returns None if there isnt any track playing currently
+    /// Returns an error if the communication or the Spotify headend failed.
     pub fn get_currently_playing_track(
         &mut self,
     ) -> Result<Option<model::track::FullTrack>, std::io::Error> {
@@ -60,7 +62,16 @@ impl EasyAPI {
         }
         Ok(None)
     }
-    /// Plays a track in a context ( for now just Album..)
+    /// Plays a track.
+    ///
+    /// You just have to send the reference to a SimplifiedTrack to get it playing.
+    /// You can also send a context for the track.
+    /// The context of a track is determining what song will play next. If the context of a track
+    /// is its album, it will simply play the next song in the album.
+    /// 
+    /// For now, our API simply covers SimplifiedAlbum context.
+    /// 
+    /// TODO Change that to a Context object, than can be an album or a playlist
     pub fn play_track(
         &mut self,
         track: &model::track::SimplifiedTrack,
