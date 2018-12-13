@@ -42,7 +42,7 @@ stage.
 
 ### Prerequisites
 
-Well before you can run there are some prerequisites:
+Before you can run there are some prerequisites:
 
 - The _Rust_ compiler
 - A _Spotify client id/secret pair_, and a _refresh token_
