@@ -67,3 +67,10 @@ pub struct SavedAlbum {
     pub added_at: DateTime<Utc>,
     pub album: FullAlbum,
 }
+
+
+#[derive(Clone, Debug)]
+pub struct SimplifiedAlbumWithTrack {
+    pub data: SimplifiedAlbum,
+    pub tracks: Vec<SimplifiedTrack>,
+}

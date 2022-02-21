@@ -11,12 +11,12 @@ use imgui::*;
 use std::thread;
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
-
+use spotify_api::model::album::SimplifiedAlbumWithTrack;
 
 
 fn main() -> Result<(), failure::Error> {
     //let mut easy_api.lock().unwrap() =
-    let mut easy_api = Arc::new(Mutex::new(EasyAPI::new()));
+    let easy_api = Arc::new(Mutex::new(EasyAPI::new()));
     match easy_api.lock().unwrap().refresh() {
         Ok(()) => {}
         Err(_err) => {
@@ -26,6 +26,8 @@ fn main() -> Result<(), failure::Error> {
     }
 
     let mut albums_data = Vec::new();
+    let mut albums_displayed = Vec::new();
+
     easy_api.lock().unwrap().get_my_albums_chunk(0, &mut albums_data).unwrap();
 
     let (tx, rx) = mpsc::channel();
@@ -39,8 +41,7 @@ fn main() -> Result<(), failure::Error> {
             //let mut data = data.lock().unwrap();
             easy_api_thread.lock().unwrap().get_my_albums_chunk(i, &mut albums_data_chunk).unwrap();
             //albums_data.extend(albums_data_chunk);
-            if (albums_data_chunk.len() <20)
-            {
+            if albums_data_chunk.len() <20 {
                 ended =  true;
             }
             tx_thread.send(albums_data_chunk).unwrap();
@@ -68,22 +69,45 @@ fn main() -> Result<(), failure::Error> {
             //ui.button("Pause");
         });
         Window::new("Spotify Albums")
-        .size([100.0, 110.0], Condition::Appearing)
+        .size([500.0, 800.0], Condition::Appearing)
         .build(ui, || {
             for album in &albums_data {
-                if (ui.button(format!("{} - {}", &album.artists[0].name, &album.name))){
-                    println!("Need to load album {} ", &album.name);
+                if ui.button(format!("{} - {}", album.artists[0].name, album.name)){
+                    println!("Need to load album {} ", album.name);
+                    albums_displayed.push(SimplifiedAlbumWithTrack{data : album.clone(),tracks : Vec::new()});
                 }
             }
 
             match rx.try_recv() {
-            Ok(albums) => { albums_data.extend(albums)}
+            Ok(albums) => { albums_data.extend(albums.clone())}
             Err(_err) => {()}
             }
-
-
-            //ui.button("Pause");
         });
+        let mut key_remove = 0;
+        for key in 0..albums_displayed.len() {
+            Window::new(format!("{} - {}", albums_displayed[key].data.artists[0].name, albums_displayed[key].data.name))
+            .size([500.0, 500.0], Condition::FirstUseEver)
+            .build(ui, || {
+                if albums_displayed[key].tracks.len() == 0
+                {
+                    let track_results = easy_api.lock().unwrap().get_tracks_from_album(&albums_displayed[key].data.id).unwrap();
+                    albums_displayed[key].tracks = track_results.clone();
+                }
+                for track in &albums_displayed[key].tracks {
+                    if ui.button(format!("- {}",track.name)) {
+                        easy_api.lock().unwrap().play_track(track, Some(&albums_displayed[key].data)).unwrap();
+                    }
+                }
+                if ui.button(format!("CLOSE")){
+                    // Remove itself from album_displayed
+                    key_remove = key+1;
+                }
+            });
+        }
+        if key_remove > 0
+        {
+            albums_displayed.remove(key_remove-1);
+        }
 
     });
     Ok(())
