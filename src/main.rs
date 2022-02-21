@@ -49,24 +49,38 @@ fn main() -> Result<(), failure::Error> {
         }
     });
 
-    let system = support::init(file!());
-    let current_artist_name = match easy_api.lock().unwrap().get_currently_playing_artist().unwrap() {
-        Some(artist) => artist.name,
-        None => "".to_string(),
-    };
-    let current_track_name = match easy_api.lock().unwrap().get_currently_playing_track().unwrap() {
-        Some(track) => track.name,
-        None => "".to_string(),
-    };
+    let mut system = support::init(file!());
+    let mut current_artist = easy_api.lock().unwrap().get_currently_playing_artist().unwrap().unwrap();
+    let mut current_track = easy_api.lock().unwrap().get_currently_playing_track().unwrap().unwrap();
+    let roboto = system.imgui.fonts().add_font(&[FontSource::TtfData {
+        data: include_bytes!("../resources/Roboto-Regular.ttf"),
+        size_pixels: 20.0,//system.font_size,
+        config: None,
+    }]);
+    system
+        .renderer
+        .reload_font_texture(&mut system.imgui)
+        .expect("Failed to reload fonts");
+
     system.main_loop(move |_, ui| {
         Window::new("Spotify Player")
         .size([300.0, 110.0], Condition::FirstUseEver)
         .build(ui, || {
-
+            let _roboto = ui.push_font(roboto);
             ui.text("Now listening to:");
-            ui.text(&current_artist_name);
-            ui.text(&current_track_name);
+            /*
+            let artist_name = match current_artist {
+                Some(artist) => artist.name,
+                None => "".to_string(),
+            };
+            let track_name = match current_track {
+                Some(track) => track.name,
+                None => "".to_string(),
+            };*/
+            ui.text(&current_artist.name);
+            ui.text(&current_track.name);
             //ui.button("Pause");
+            _roboto.pop()
         });
         Window::new("Spotify Albums")
         .size([500.0, 800.0], Condition::Appearing)
@@ -96,6 +110,8 @@ fn main() -> Result<(), failure::Error> {
                 for track in &albums_displayed[key].tracks {
                     if ui.button(format!("- {}",track.name)) {
                         easy_api.lock().unwrap().play_track(track, Some(&albums_displayed[key].data)).unwrap();
+                        current_artist = albums_displayed[key].data.artists[0].clone();
+                        current_track = track.clone();
                     }
                 }
                 if ui.button(format!("CLOSE")){

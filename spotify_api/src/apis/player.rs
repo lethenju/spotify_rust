@@ -47,7 +47,7 @@ impl EasyAPI {
     /// Returns an error if the communication or the Spotify headend failed.
     pub fn get_currently_playing_track(
         &mut self,
-    ) -> Result<Option<model::track::FullTrack>, std::io::Error> {
+    ) -> Result<Option<model::track::SimplifiedTrack>, std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_currently_playing(&mut result);
         match errno {
