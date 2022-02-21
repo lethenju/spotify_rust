@@ -34,7 +34,7 @@ impl EasyAPI {
         if result.len() != 0 {
             let v: Value = serde_json::from_str(result.as_str()).unwrap();
             return Ok(Some(
-                serde_json::from_str(&serde_json::to_string(&v["item"]["artist"][0]).unwrap())
+                serde_json::from_str(&serde_json::to_string(&v["item"]["artists"][0]).unwrap())
                     .unwrap(),
             ));
         }

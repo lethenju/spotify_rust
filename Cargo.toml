@@ -2,15 +2,19 @@
 name = "spotify_rust"
 version = "0.0.3"
 authors = ["Julien LE THENO"]
+edition = "2018"
 
 [dependencies]
 spotify_api = {path = "spotify_api"}
 clap = "2.32.0"
-termion = "*"
-tui = "*"
 failure = "0.1"
 text_io = "0.1.7"
 webbrowser = "0.3.1"
 term-painter = "0.2.4"
 tiny_http = "0.6"
 base64 = "0.10.0"
+imgui = "0.8.2"
+imgui-glium-renderer = "0.8.2"
+imgui-winit-support = "0.8.2"
+glium = { version = "0.30", default-features = true }
+clipboard = "0.5"
