@@ -28,6 +28,7 @@ use self::command::Command;
 pub struct EasyAPI {
     command: Command,
 }
+unsafe impl Send for EasyAPI{}
 
 impl EasyAPI {
     /// Creates a EasyAPI handle. The handle has to be mutable, because some
