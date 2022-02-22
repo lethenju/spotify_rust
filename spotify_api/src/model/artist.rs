@@ -13,6 +13,7 @@ pub struct SimplifiedArtist {
     pub href: String,
     pub id: String,
     pub name: String,
+    pub genres: Option<Vec<String>>,
     #[serde(rename = "type")]
     pub _type: Type,
     pub uri: String,

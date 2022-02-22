@@ -19,6 +19,7 @@ impl EasyAPI {
             .command
             .refresh(base_64_secret.as_str(), refresh_token.as_str());
     }
+    
     /// Retrieves a refresh token
     /// takes the base64 of <clientid:clientsecret>
     /// and an authorization code
@@ -32,4 +33,6 @@ impl EasyAPI {
             .retrieve_refresh_token(base_64_secret.as_str(), authorization_code.as_str());
         Ok(refresh_token.unwrap())
     }
+
+    
 }

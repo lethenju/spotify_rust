@@ -66,3 +66,27 @@ pub fn load_keys(
     println!("Keys loaded");
     Ok(())
 }
+
+
+pub fn read_library(
+    json_library: &mut String,
+) -> Result<(), std::io::Error> {
+    println!("Loading library");
+
+    match File::open("library") {
+        Ok(file) => {
+            let mut f = file;
+            f.read_to_string(json_library)
+                .expect("something went wrong reading the file");
+        }
+        _ => {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "No file :(",
+            ));
+        }
+    }
+
+    println!("Library loaded ! ");
+    Ok(())
+}

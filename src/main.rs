@@ -18,9 +18,10 @@ use spotify_api::model::artist::SimplifiedArtist;
 use spotify_api::model::track::SimplifiedTrack;
 use spotify_api::model::track::FullTrack;
 use std::ffi::OsStr;
-
+use std::collections::HashSet;
 struct UiState{
     filter_album : String,
+    genres_available : HashSet<String>,
     artists_displayed : Vec<SimplifiedArtist>,
     albums_displayed : Vec<SimplifiedAlbumWithTracks>,
 }
@@ -43,6 +44,7 @@ fn main() -> Result<(), failure::Error> {
     let mut app = AppContext{
         ui_state : UiState {
             filter_album : String::new(),
+            genres_available : HashSet::new(),
             artists_displayed : Vec::new(),
             albums_displayed : Vec::new(),
         },
@@ -67,19 +69,38 @@ fn main() -> Result<(), failure::Error> {
     let (tx, rx) = mpsc::channel();
     let (easy_api_thread, tx_thread) = (Arc::clone(&app.easy_api),tx.clone());
     let _handle = thread::spawn(move || {
-        let mut ended = false;
-        let mut i = 0;
-        while !ended {
-            // Todo read local library first and then compare with synced
-            let mut albums_data_chunk = Vec::new();
-            println!("Loading albums {} ", i);
-            easy_api_thread.lock().unwrap().get_my_albums_chunk(i, &mut albums_data_chunk).unwrap();
-            if albums_data_chunk.len() <20 {
-                ended =  true;
-            }
-            tx_thread.send(albums_data_chunk).unwrap();
-            i+=20;
+
+        let mut albums_data_library = Vec::new();
+        // Todo read local library first 
+         match easy_api_thread.lock().unwrap().read_library( &mut albums_data_library) {
+            Ok(()) => {},
+            Err(_err) => {}
         }
+        if albums_data_library.is_empty() {
+            
+            println!("Empty local library : downloading..");
+
+            let mut ended = false;
+            let mut i = 0;
+            while !ended {
+                let mut albums_data_chunk = Vec::new();
+                println!("Loading albums {} ", i);
+                easy_api_thread.lock().unwrap().get_my_albums_chunk(i, &mut albums_data_chunk).unwrap();
+                if albums_data_chunk.len() <20 {
+                    ended =  true;
+                }
+                tx_thread.send(albums_data_chunk.clone()).unwrap();
+                //albums_data_library.extend(albums_data_chunk.clone());
+                i+=20;
+            }
+            println!("Local library downloaded : saving..");
+
+            easy_api_thread.lock().unwrap().write_library(albums_data_library).unwrap();
+        } else {
+            tx_thread.send(albums_data_library).unwrap();
+
+        }
+
     });
 
     let mut system = support::init(file!());
@@ -157,20 +178,39 @@ fn main() -> Result<(), failure::Error> {
             if let Some(menu_bar) = ui.begin_menu_bar() {
 
                 if let Some(menu) = ui.begin_menu("Filters") {
-                    /*if (ui.button("Filtrer par date de parution")){
-                        // C'est parti
-                    }*/
-
+                    for genre in &app.ui_state.genres_available {
+                        ui.text(format!("{}",genre));
+                    }
+                    // TODO Filter by genres with checkbox
                     menu.end();
                 }
 
                 if let Some(menu) = ui.begin_menu("Sort by") {
 
-                    if ui.button("Release Date"){
-                        // C'est parti
+                    if ui.button("Release Date Recent..Old"){
                         app.albums_data.sort_by(|a, b| b.release_date.cmp(&a.release_date));
                     }
-
+                    if ui.button("Release Date Old..Recent"){
+                        app.albums_data.sort_by(|a, b| a.release_date.cmp(&b.release_date));
+                    }
+                    if ui.button("Name A..Z"){
+                        app.albums_data.sort_by(|a, b| a.name.cmp(&b.name));
+                    }
+                    if ui.button("Name Z..A"){
+                        app.albums_data.sort_by(|a, b| b.name.cmp(&a.name));
+                    }
+                    if ui.button("Artist A..Z"){
+                        app.albums_data.sort_by(|a, b| a.artists[0].name.cmp(&b.artists[0].name));
+                    }
+                    if ui.button("Artist Z..A"){
+                        app.albums_data.sort_by(|a, b| b.artists[0].name.cmp(&a.artists[0].name));
+                    }
+                    if ui.button("Popularity Min..Max"){
+                        app.albums_data.sort_by(|a, b| a.popularity.cmp(&b.popularity));
+                    }
+                    if ui.button("Popularity Max..Min"){
+                        app.albums_data.sort_by(|a, b| b.popularity.cmp(&a.popularity));
+                    }
                     menu.end();
                 }
 
@@ -185,13 +225,16 @@ fn main() -> Result<(), failure::Error> {
                     show = false;
                     let my_os_filter = OsStr::new(&app.ui_state.filter_album);
                     if album.name.to_string().contains(my_os_filter.to_str().unwrap()) ||
+                       album.release_date.to_string().contains(my_os_filter.to_str().unwrap()) ||
                        album.artists[0].name.to_string().contains(my_os_filter.to_str().unwrap()) {
                         show = true;
                     }
                 }
-
                 if show {
-                    if ui.button(format!("{} - {}", album.artists[0].name, album.name)){
+                    ui.text(format!("{}",album.release_date));
+                    ui.same_line_with_pos(100.0);
+
+                    if ui.button(format!("{}", album.name)){
                         println!("Need to load album {} ", album.name);
                         let new_album = SimplifiedAlbumWithTracks{data : album.clone().to_simplified(),tracks : Vec::new()};
                         let mut is_present = false;
@@ -205,11 +248,27 @@ fn main() -> Result<(), failure::Error> {
                             app.ui_state.albums_displayed.push(new_album);
                         }
                     }
+                    ui.same_line();
+                    ui.text(format!("{}",album.artists[0].name));
                 }
             }
 
             match rx.try_recv() {
-            Ok(albums) => { app.albums_data.extend(albums.clone())}
+            Ok(albums) => {
+                app.albums_data.extend(albums.clone());
+                for alb in albums {
+                    // TODO Debug : theres no genre at all lol
+                    match &alb.artists[0].genres {
+                        Some(genres) => {
+                            for genre in genres {
+                                println!("Genre added {}", genre);
+                                app.ui_state.genres_available.insert(genre.clone());
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
             Err(_err) => {()}
             }
         });
@@ -219,8 +278,6 @@ fn main() -> Result<(), failure::Error> {
             Window::new(format!("{} - {}", app.ui_state.albums_displayed[key].data.artists[0].name, app.ui_state.albums_displayed[key].data.name))
             .size([500.0, 500.0], Condition::FirstUseEver)
             .build(ui, || {
-
-
                 if app.ui_state.albums_displayed[key].tracks.len() == 0
                 {
                     let track_results = app.easy_api.lock().unwrap().get_tracks_from_album(&app.ui_state.albums_displayed[key].data.id).unwrap();

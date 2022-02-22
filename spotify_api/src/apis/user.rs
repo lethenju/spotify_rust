@@ -1,6 +1,9 @@
 use super::super::model;
 use super::super::EasyAPI;
+use super::super::files;
 use serde_json::Value;
+use std::fs::File;
+use std::io::Write;
 
 impl EasyAPI {
     ///  Get all the current user's albums
@@ -34,5 +37,41 @@ impl EasyAPI {
             )?);
         }
         Ok(())
+    }
+
+    /// Load library
+    pub fn read_library(&mut self,
+          final_result: &mut Vec<model::album::FullAlbum>) -> Result<(), std::io::Error> {
+        let mut result = String::new();
+        match files::read_library(&mut result) {
+            Ok(()) => {
+
+            }
+            _ => {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "No file :(",
+                ));
+            }
+        }
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+
+        // work for playlist, we should verify the JSON out for other types to get the right thing
+        let size = v.as_array().unwrap().len();
+        println!("Reading library : {}", size);
+        for x in 0..size {
+            final_result.push(serde_json::from_str(
+                &serde_json::to_string(&v[x]).unwrap(),
+            )?);
+        }
+
+        Ok(())
+    }
+    /// Write library
+    pub fn write_library(&mut self, library:  Vec<model::album::FullAlbum>)-> Result<(), std::io::Error>{
+            let v = serde_json::to_string(&library);
+            let mut buffer = File::create("library").unwrap();
+            write!(buffer,"{}", v.unwrap());
+            Ok(())
     }
 }
