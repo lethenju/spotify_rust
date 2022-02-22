@@ -24,4 +24,12 @@ impl EasyAPI {
         }
         Ok(final_result)
     }
+/*
+    pub fn get_albums_from_artist(
+        &mut self,
+        id_artist: &str,
+    ) -> Result<Vec<model::track::SimplifiedAlbum>, std::io::Error> {
+        Ok(())
+    }
+    */
 }

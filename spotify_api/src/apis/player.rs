@@ -41,7 +41,7 @@ impl EasyAPI {
         Ok(None)
     }
 
-    /// Gets the currently playing track as a FullTrack object.
+    /// Gets the currently playing track as a SimplifiedTrack object.
     ///
     /// Returns None if there isnt any track playing currently
     /// Returns an error if the communication or the Spotify headend failed.
@@ -62,6 +62,29 @@ impl EasyAPI {
         }
         Ok(None)
     }
+
+    /// Gets the currently playing track as a FullTrack object.
+    ///
+    /// Returns None if there isnt any track playing currently
+    /// Returns an error if the communication or the Spotify headend failed.
+    pub fn get_currently_playing_track_full(
+        &mut self,
+    ) -> Result<Option<model::track::FullTrack>, std::io::Error> {
+        let mut result = String::new();
+        let errno = self.command.get_currently_playing(&mut result);
+        match errno {
+            Err(error) => return Err(error),
+            _ => {}
+        }
+        if result.len() != 0 {
+            let v: Value = serde_json::from_str(result.as_str()).unwrap();
+            return Ok(Some(
+                serde_json::from_str(&serde_json::to_string(&v["item"]).unwrap()).unwrap(),
+            ));
+        }
+        Ok(None)
+    }
+
     /// Plays a track.
     ///
     /// You just have to send the reference to a SimplifiedTrack to get it playing.

@@ -6,7 +6,7 @@ impl EasyAPI {
     ///  Get all the current user's albums
     pub fn get_my_albums(
         &mut self,
-        final_result: &mut Vec<model::album::SimplifiedAlbum>,
+        final_result: &mut Vec<model::album::FullAlbum>,
     ) -> Result<(), std::io::Error> {
         for i in 0..5 {
             // SUPER dirty -> TODO get number of album to know how many chunks to get.
@@ -18,7 +18,7 @@ impl EasyAPI {
     pub fn get_my_albums_chunk(
         &mut self,
         offset: u16,
-        final_result: &mut Vec<model::album::SimplifiedAlbum>,
+        final_result: &mut Vec<model::album::FullAlbum>,
     ) -> Result<(), std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_my_albums(offset, &mut result);

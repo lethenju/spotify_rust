@@ -23,6 +23,8 @@ pub struct SimplifiedAlbum {
     pub _type: Type,
     pub uri: String,
 }
+
+
 ///[link to album object full](https://developer.spotify.com/web-api/object-model/#album-object-full)
 /// Full Album Object
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -45,6 +47,27 @@ pub struct FullAlbum {
     #[serde(rename = "type")]
     pub _type: Type,
     pub uri: String,
+}
+
+
+impl FullAlbum {
+    ///Transformation to a SimplifiedAlbum
+    pub fn to_simplified(
+        &mut self
+    ) -> SimplifiedAlbum {
+        SimplifiedAlbum{
+            artists : self.artists.clone(),
+            _type : self._type.clone(),
+            available_markets : self.available_markets.clone(),
+            name : self.name.clone(),
+            id : self.id.clone(),
+            album_type : String::from(self.album_type.as_str()),
+            external_urls : self.external_urls.clone(),
+            href : self.href.clone(),
+            images : self.images.clone(),
+            uri : self.uri.clone()
+        }
+    }
 }
 
 /// Full Albums
@@ -70,7 +93,7 @@ pub struct SavedAlbum {
 
 
 #[derive(Clone, Debug)]
-pub struct SimplifiedAlbumWithTrack {
+pub struct SimplifiedAlbumWithTracks {
     pub data: SimplifiedAlbum,
     pub tracks: Vec<SimplifiedTrack>,
 }
