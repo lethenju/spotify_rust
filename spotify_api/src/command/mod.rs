@@ -142,6 +142,28 @@ impl Command {
             &mut *result,
         );
     }
+    pub fn get_albums_from_artist(&mut self,
+        id: &str,
+        result: &mut String,
+    ) -> Result<(), std::io::Error> {
+        // GET https://api.spotify.com/v1/artists/{}/albums
+        let mut list_headers = List::new();
+        let _auth = format!(
+            "{}{}",
+            "Authorization: Bearer ",
+            self.communicator.get_access_token()
+        );
+        list_headers.append(&_auth).unwrap();
+
+        return self.communicator.perform(
+            format!("https://api.spotify.com/v1/artists/{}/albums", id).as_str(),
+            "",
+            "",
+            list_headers,
+            "GET",
+            &mut *result,
+        );
+    }
     pub fn get_currently_playing(&mut self, result: &mut String) -> Result<(), std::io::Error> {
         let mut list_headers = List::new();
         let _auth = format!(

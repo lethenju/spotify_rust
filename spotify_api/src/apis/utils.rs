@@ -24,12 +24,26 @@ impl EasyAPI {
         }
         Ok(final_result)
     }
-/*
+
     pub fn get_albums_from_artist(
         &mut self,
         id_artist: &str,
-    ) -> Result<Vec<model::track::SimplifiedAlbum>, std::io::Error> {
-        Ok(())
-    }
-    */
+    ) -> Result<Vec<model::album::SimplifiedAlbum>, std::io::Error> {
+        let mut result = String::new();
+        let mut final_result = Vec::new();
+        match self.command.get_albums_from_artist(id_artist, &mut result) {
+            Ok(_ok) => {}
+            Err(error) => return Err(error),
+        }
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+        // work for playlist, we should verify the JSON out for other types to get the right thing
+        let size = v["items"].as_array().unwrap().len();
+        for x in 0..size {
+            final_result.push(serde_json::from_str(
+                &serde_json::to_string(&v["items"][x]).unwrap(),
+            )?);
+        }
+        Ok(final_result)
+        }
+    
 }

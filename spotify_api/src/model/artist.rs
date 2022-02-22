@@ -5,6 +5,7 @@ use serde_json::Value;
 use super::senum::Type;
 use super::image::Image;
 use super::page::CursorBasedPage;
+use model::album::SimplifiedAlbum;
 ///[artist object simplified](https://developer.spotify.com/web-api/object-model/#artist-object-simplified)
 /// Simplified Artist Object
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -46,4 +47,11 @@ pub struct FullArtists {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CursorPageFullArtists {
     pub artists: CursorBasedPage<FullArtist>,
+}
+
+/// Simplified artist with a list of its albums
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SimplifiedArtistWithAlbums{
+    pub data : SimplifiedArtist,
+    pub albums : Vec<SimplifiedAlbum>,
 }

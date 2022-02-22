@@ -13,6 +13,7 @@ use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 use spotify_api::model::album::SimplifiedAlbum;
 use spotify_api::model::album::FullAlbum;
+use spotify_api::model::artist::SimplifiedArtistWithAlbums;
 use spotify_api::model::album::SimplifiedAlbumWithTracks;
 use spotify_api::model::artist::SimplifiedArtist;
 use spotify_api::model::track::SimplifiedTrack;
@@ -22,7 +23,7 @@ use std::collections::HashSet;
 struct UiState{
     filter_album : String,
     genres_available : HashSet<String>,
-    artists_displayed : Vec<SimplifiedArtist>,
+    artists_displayed : Vec<SimplifiedArtistWithAlbums>,
     albums_displayed : Vec<SimplifiedAlbumWithTracks>,
 }
 struct PlayingContext{
@@ -71,7 +72,6 @@ fn main() -> Result<(), failure::Error> {
     let _handle = thread::spawn(move || {
 
         let mut albums_data_library = Vec::new();
-        // Todo read local library first 
          match easy_api_thread.lock().unwrap().read_library( &mut albums_data_library) {
             Ok(()) => {},
             Err(_err) => {}
@@ -134,6 +134,7 @@ fn main() -> Result<(), failure::Error> {
                 Some(artist) => {
                     if ui.button(&artist.name){
                         // add an artist window
+                        app.ui_state.artists_displayed.push(SimplifiedArtistWithAlbums{data:artist.clone(), albums: Vec::new()})
                     }
                     ui.same_line();
                 }
@@ -249,7 +250,10 @@ fn main() -> Result<(), failure::Error> {
                         }
                     }
                     ui.same_line();
-                    ui.text(format!("{}",album.artists[0].name));
+                    if ui.button(format!("{}",&album.artists[0].name)){
+                        // add an artist window
+                        app.ui_state.artists_displayed.push(SimplifiedArtistWithAlbums{data:album.artists[0].clone(), albums: Vec::new()})
+                    }
                 }
             }
 
@@ -303,6 +307,49 @@ fn main() -> Result<(), failure::Error> {
         if key_remove > 0
         {
             app.ui_state.albums_displayed.remove(key_remove-1);
+        }
+
+
+
+        let mut key_remove = 0;
+        for key in 0..app.ui_state.artists_displayed.len() {
+
+            Window::new(format!("{} ", app.ui_state.artists_displayed[key].data.name))
+            .size([500.0, 500.0], Condition::FirstUseEver)
+            .build(ui, || {
+                if app.ui_state.artists_displayed[key].albums.len() == 0
+                {
+                    let albums_results = app.easy_api.lock().unwrap().get_albums_from_artist(&app.ui_state.artists_displayed[key].data.id).unwrap();
+                    app.ui_state.artists_displayed[key].albums = albums_results.clone();
+                }
+                for album in &app.ui_state.artists_displayed[key].albums {
+                    if ui.button(format!("{}",album.name)) {
+                        println!("Need to load album {} ", album.name);
+                        let new_album = SimplifiedAlbumWithTracks{data : album.clone(),tracks : Vec::new()};
+                        let mut is_present = false;
+                        for alb in &app.ui_state.albums_displayed  {
+                            if alb.data.id == album.id {
+                                is_present = true;
+                                break;
+                            }
+                        }
+                        if !is_present {
+                            app.ui_state.albums_displayed.push(new_album);
+                        }
+
+                    }
+                }
+                ui.spacing();
+                if ui.button(format!("CLOSE")){
+                    // Remove itself from artists_displayed
+                    key_remove = key+1;
+                }
+
+            });
+        }
+        if key_remove > 0
+        {
+            app.ui_state.artists_displayed.remove(key_remove-1);
         }
 
     });
