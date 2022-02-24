@@ -18,6 +18,7 @@ pub struct UiState{
    genres_available : HashSet<String>,
    artists_displayed : Vec<SimplifiedArtistWithAlbums>,
    albums_displayed : Vec<SimplifiedAlbumWithTracks>,
+   show_my_albums : bool,
 }
 pub struct PlayingContext{
    pub current_artist : Mutex<Option<SimplifiedArtist>>,
@@ -40,6 +41,7 @@ pub fn init_ui_state() -> UiState
       genres_available : HashSet::new(),
       artists_displayed : Vec::new(),
       albums_displayed : Vec::new(),
+      show_my_albums : false,
   };
 }
 
@@ -122,12 +124,14 @@ fn show_library(ui : &Ui, app : &mut AppContext) {
           if ui.button("Artist Z..A"){
               app.albums_data.sort_by(|a, b| b.artists[0].name.cmp(&a.artists[0].name));
           }
+          /*
           if ui.button("Popularity Min..Max"){
               app.albums_data.sort_by(|a, b| a.popularity.cmp(&b.popularity));
           }
           if ui.button("Popularity Max..Min"){
               app.albums_data.sort_by(|a, b| b.popularity.cmp(&a.popularity));
           }
+          */
           menu.end();
       }
 
@@ -199,8 +203,11 @@ fn show_album(ui : &Ui, app : &mut AppContext, key : usize, key_remove :&mut usi
        let track_results = app.easy_api.lock().unwrap().get_tracks_from_album(&app.ui_state.albums_displayed[key].data.id).unwrap();
        app.ui_state.albums_displayed[key].tracks = track_results.clone();
    }
+
    for track in &app.ui_state.albums_displayed[key].tracks {
-       if ui.button(format!("- {}",track.name)) {
+       ui.text(format!("{}", track.track_number));
+       ui.same_line_with_pos(30.0);
+       if ui.button(format!("{}",track.name)) {
            app.easy_api.lock().unwrap().play_track(track, Some(&app.ui_state.albums_displayed[key].data)).unwrap();
            app.playing_context.current_artist = Mutex::new(Some(app.ui_state.albums_displayed[key].data.artists[0].clone()));
            app.playing_context.current_track = Mutex::new(Some(track.clone()));
@@ -220,8 +227,12 @@ fn show_artist(ui : &Ui, app : &mut AppContext, key : usize, key_remove :&mut us
       let albums_results = app.easy_api.lock().unwrap().get_albums_from_artist(&app.ui_state.artists_displayed[key].data.id).unwrap();
       app.ui_state.artists_displayed[key].albums = albums_results.clone();
   }
+  ui.text("Albums");
+  ui.separator();
   for album in &app.ui_state.artists_displayed[key].albums {
-      if ui.button(format!("{}",album.name)) {
+         ui.text(format!("{}",album.release_date));
+         ui.same_line_with_pos(100.0);
+         if ui.button(format!("{}",album.name)) {
           println!("Need to load album {} ", album.name);
           let new_album = SimplifiedAlbumWithTracks{data : album.clone(),tracks : Vec::new()};
           let mut is_present = false;
@@ -250,34 +261,28 @@ pub fn main_loop(ui : &mut Ui<'_>, app : &mut AppContext) {
 
         // Todo
         if let Some(menu_bar) = ui.begin_main_menu_bar() {
-         if let Some(menu) = ui.begin_menu("File") {
-             menu.end();
-         }
-         if let Some(menu) = ui.begin_menu("Edit") {
-             MenuItem::new("Undo").shortcut("CTRL+Z").build(ui);
-             MenuItem::new("Redo")
-                 .shortcut("CTRL+Y")
-                 .enabled(false)
-                 .build(ui);
-             ui.separator();
-             MenuItem::new("Cut").shortcut("CTRL+X").build(ui);
-             MenuItem::new("Copy").shortcut("CTRL+C").build(ui);
-             MenuItem::new("Paste").shortcut("CTRL+V").build(ui);
+         if let Some(menu) = ui.begin_menu("Window") {
+            //MenuItem::new("Undo").shortcut("CTRL+Z").build(ui);
+            ui.checkbox("Show my albums", &mut app.ui_state.show_my_albums);
              menu.end();
          }
          menu_bar.end();
      }
+
      Window::new("Spotify Player")
      .size([300.0, 110.0], Condition::FirstUseEver)
      .build(ui, || {
         show_spotify_player(ui, app);
      });
-     Window::new("Spotify Albums")
-     .size([500.0, 800.0], Condition::Appearing)
-     .menu_bar(true)
-     .build(ui, || {
-        show_library(ui, app);
-     });
+     if app.ui_state.show_my_albums {
+      Window::new("Spotify Albums")
+      .size([500.0, 800.0], Condition::Appearing)
+      .menu_bar(true)
+      .build(ui, || {
+         show_library(ui, app);
+      });
+     }
+     
      let mut key_remove = 0;
      for key in 0..app.ui_state.albums_displayed.len() {
 

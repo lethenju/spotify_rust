@@ -22,6 +22,7 @@ pub struct SimplifiedAlbum {
     #[serde(rename = "type")]
     pub _type: Type,
     pub uri: String,
+    pub release_date: String,
 }
 
 
@@ -32,15 +33,15 @@ pub struct FullAlbum {
     pub artists: Vec<SimplifiedArtist>,
     pub album_type: AlbumType,
     pub available_markets: Vec<String>,
-    pub copyrights: Vec<HashMap<String, String>>,
-    pub external_ids: HashMap<String, String>,
+    //pub copyrights: Vec<HashMap<String, String>>,
+    //pub external_ids: HashMap<String, String>,
     pub external_urls: HashMap<String, String>,
-    pub genres: Vec<String>,
+    //pub genres: Vec<String>,
     pub href: String,
     pub id: String,
     pub images: Vec<Image>,
     pub name: String,
-    pub popularity: u32,
+    //pub popularity: u32,
     pub release_date: String,
     pub release_date_precision: String,
     pub tracks: Page<SimplifiedTrack>,
@@ -65,7 +66,8 @@ impl FullAlbum {
             external_urls : self.external_urls.clone(),
             href : self.href.clone(),
             images : self.images.clone(),
-            uri : self.uri.clone()
+            uri : self.uri.clone(),
+            release_date : self.release_date.clone(),
         }
     }
 }
