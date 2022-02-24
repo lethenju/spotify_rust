@@ -71,7 +71,6 @@ impl EasyAPI {
     pub fn write_library(&mut self, library:  Vec<model::album::FullAlbum>)-> Result<(), std::io::Error>{
             let v = serde_json::to_string(&library);
             let mut buffer = File::create("library").unwrap();
-            write!(buffer,"{}", v.unwrap());
-            Ok(())
+            write!(buffer,"{}", v.unwrap())
     }
 }
