@@ -3,3 +3,4 @@ pub mod player;
 pub mod oauth;
 pub mod user;
 pub mod utils;
+pub mod wiki;

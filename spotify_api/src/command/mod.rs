@@ -6,6 +6,7 @@
 extern crate curl;
 extern crate percent_encoding;
 
+
 mod communicator;
 use self::communicator::Communicator;
 use self::curl::easy::List;
@@ -182,6 +183,25 @@ impl Command {
             &mut *result,
         );
     }
+
+    pub fn get_playback_state(&mut self, result: &mut String) -> Result<(), std::io::Error> {
+        let mut list_headers = List::new();
+        let _auth = format!(
+            "{}{}",
+            "Authorization: Bearer ",
+            self.communicator.get_access_token()
+        );
+        list_headers.append(&_auth).unwrap();
+
+        return self.communicator.perform(
+            "https://api.spotify.com/v1/me/player",
+            "",
+            "",
+            list_headers,
+            "GET",
+            &mut *result,
+        );
+    }
     pub fn refresh(
         &mut self,
         base_64_secret: &str,
@@ -198,5 +218,24 @@ impl Command {
             .communicator
             .retrieve_refresh_token(base_64_secret, authorization_code)
             .unwrap())
+    }
+
+
+
+
+
+
+
+    pub fn get_wiki_description(&mut self, search: String, result: &mut String) -> Result<(), std::io::Error> {
+        let mut list_headers = List::new();
+        let _search = utf8_percent_encode(&search, DEFAULT_ENCODE_SET).to_string();
+        return self.communicator.perform(
+            format!("https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=true&format=json&exchars=300&titles={}",_search).as_str(),
+            "",
+            "",
+            list_headers,
+            "GET",
+            &mut *result,
+        );
     }
 }

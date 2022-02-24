@@ -29,6 +29,8 @@ fn main() -> Result<(), failure::Error> {
     //let mut easy_api.lock().unwrap() =
 
     let (tx, rx) = mpsc::channel();
+    let (tx_description, rx_description) = mpsc::channel();
+
     let mut app = AppContext{
         ui_state : init_ui_state(),
         playing_context : PlayingContext{
@@ -39,7 +41,9 @@ fn main() -> Result<(), failure::Error> {
         },
         easy_api : Arc::new(Mutex::new(EasyAPI::new())),
         albums_data : Vec::new(),
-        rx : rx,
+        rx_album_library : rx,
+        tx_description : tx_description,
+        rx_description : rx_description,
     };
 
     match app.easy_api.lock().unwrap().refresh() {

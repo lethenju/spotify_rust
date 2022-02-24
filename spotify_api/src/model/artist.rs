@@ -54,4 +54,5 @@ pub struct CursorPageFullArtists {
 pub struct SimplifiedArtistWithAlbums{
     pub data : SimplifiedArtist,
     pub albums : Vec<SimplifiedAlbum>,
+    pub description : String,
 }

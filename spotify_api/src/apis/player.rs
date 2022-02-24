@@ -1,4 +1,5 @@
 use super::super::model;
+use model::context::FullPlayingContext;
 use super::super::EasyAPI;
 use serde_json::Value;
 
@@ -120,4 +121,21 @@ impl EasyAPI {
 
         Ok(())
     }
+
+    pub fn get_playback_state(
+        &mut self,
+        mut playing_context : FullPlayingContext,
+    )-> Result<(), std::io::Error> {
+        let mut result = String::new();
+        let errno = self.command.get_playback_state(&mut result);
+        match errno {
+            Err(error) => return Err(error),
+            _ => {}
+        }
+        if result.len() != 0 {
+            playing_context = serde_json::from_str(result.as_str()).unwrap();
+        }
+        Ok(())
+    }
 }
+
