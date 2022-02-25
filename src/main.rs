@@ -83,7 +83,6 @@ fn main() -> Result<(), failure::Error> {
             easy_api_thread.lock().unwrap().write_library(albums_data_library).unwrap();
         } else {
             tx_thread.send(albums_data_library).unwrap();
-
         }
 
     });
@@ -97,11 +96,21 @@ fn main() -> Result<(), failure::Error> {
         Some(track) => {Mutex::new(Some(track.album.clone()))},
         None => {Mutex::new(None)}
     };
-    let roboto = system.imgui.fonts().add_font(&[FontSource::TtfData {
-        data: include_bytes!("../resources/Roboto-Regular.ttf"),
+    app.ui_state.font_normal = Some(system.imgui.fonts().add_font(&[FontSource::TtfData {
+        data: include_bytes!("../resources/SF-UI-Display-Regular.ttf"),
         size_pixels: 20.0,//system.font_size,
         config: None,
-    }]);
+    }]));
+    app.ui_state.font_header1 = Some(system.imgui.fonts().add_font(&[FontSource::TtfData {
+        data: include_bytes!("../resources/SF-UI-Display-Black.ttf"),
+        size_pixels: 60.0,//system.font_size,
+        config: None,
+    }]));
+    app.ui_state.font_header2 = Some(system.imgui.fonts().add_font(&[FontSource::TtfData {
+        data: include_bytes!("../resources/SF-UI-Display-Black.ttf"),
+        size_pixels: 40.0,//system.font_size,
+        config: None,
+    }]));
     system
         .renderer
         .reload_font_texture(&mut system.imgui)

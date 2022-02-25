@@ -12,7 +12,6 @@ use std::ffi::OsStr;
 use std::sync::{Arc, Mutex};
 
 use std::thread;
-use std::sync::mpsc;
 
 use std::time::Duration;
 pub struct UiState {
@@ -21,6 +20,10 @@ pub struct UiState {
     artists_displayed: Vec<SimplifiedArtistWithAlbums>,
     albums_displayed: Vec<SimplifiedAlbumWithTracks>,
     show_my_albums: bool,
+    pub font_normal : Option<FontId>,
+    pub font_header1 : Option<FontId>,
+    pub font_header2 : Option<FontId>,
+    pub font_light : Option<FontId>,
 }
 pub struct PlayingContext {
     pub current_artist: Mutex<Option<SimplifiedArtist>>,
@@ -45,11 +48,14 @@ pub fn init_ui_state() -> UiState {
         artists_displayed: Vec::new(),
         albums_displayed: Vec::new(),
         show_my_albums: false,
+        font_normal : None,
+        font_header1 : None,
+        font_header2 : None,
+        font_light : None,
     };
 }
 
 fn show_spotify_player(ui: &Ui, app: &mut AppContext) {
-    //let _roboto = ui.push_font(roboto);
     ui.text("Now listening to:");
     ui.spacing();
     let current_artist_guard = app.playing_context.current_artist.lock().unwrap();
@@ -112,10 +118,14 @@ fn show_spotify_player(ui: &Ui, app: &mut AppContext) {
     };
     //ui.text(&current_track.name);
     //ui.button("Pause");
-    //_roboto.pop()
 }
 
 fn show_library(ui: &Ui, app: &mut AppContext) {
+    let _font_title = ui.push_font(app.ui_state.font_header1.unwrap());
+    ui.text("Library");
+    _font_title.pop();
+    ui.spacing();
+
     if let Some(menu_bar) = ui.begin_menu_bar() {
         if let Some(menu) = ui.begin_menu("Filters") {
             for genre in &app.ui_state.genres_available {
@@ -164,6 +174,9 @@ fn show_library(ui: &Ui, app: &mut AppContext) {
 
     ui.spacing();
     ui.input_text("", &mut app.ui_state.filter_album).build();
+
+    ui.spacing();
+
     for album in &app.albums_data {
         let mut show = true;
         if !app.ui_state.filter_album.is_empty() {
@@ -186,7 +199,17 @@ fn show_library(ui: &Ui, app: &mut AppContext) {
             }
         }
         if show {
-            ui.text(format!("{}", album.release_date));
+            let release_year : String;
+            if album.release_date.len() >=4 {
+                release_year = album.release_date[..4].to_string();
+            } else {
+                release_year = "".to_string();
+            }
+            const GREY: [f32; 4] = [0.5, 0.5, 0.5, 1.0];
+            let grey_col = ui.push_style_color(StyleColor::Text,GREY);
+            ui.text(format!("{}", release_year));
+            grey_col.pop();
+
             ui.same_line_with_pos(100.0);
 
             if ui.button(format!("{}", album.name)) {
@@ -207,21 +230,30 @@ fn show_library(ui: &Ui, app: &mut AppContext) {
                 }
             }
             ui.same_line();
+            let grey_col = ui.push_style_color(StyleColor::Text,GREY);
             if ui.button(format!("{}", &album.artists[0].name)) {
                 // add an artist window
                 app.ui_state
-                    .artists_displayed
-                    .push(SimplifiedArtistWithAlbums {
+                .artists_displayed
+                .push(SimplifiedArtistWithAlbums {
                         data: album.artists[0].clone(),
                         albums: Vec::new(),
                         description: String::new(),
                     })
             }
+            grey_col.pop();
+            ui.separator();
         }
     }
 }
 
 fn show_album(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize) {
+
+    let _font_title = ui.push_font(app.ui_state.font_header1.unwrap());
+    ui.text(app.ui_state.albums_displayed[key].data.name.clone());
+    _font_title.pop();
+    ui.spacing();
+    
     if app.ui_state.albums_displayed[key].tracks.len() == 0 {
         let track_results = app
             .easy_api
@@ -233,11 +265,15 @@ fn show_album(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize)
     }
 
     for track in &app.ui_state.albums_displayed[key].tracks {
+        const GREY: [f32; 4] = [0.5, 0.5, 0.5, 1.0];
+
+        let grey_col = ui.push_style_color(StyleColor::Text,GREY);
         ui.text(format!("{}", track.track_number));
-        ui.same_line_with_pos(30.0);
+        grey_col.pop();
+        ui.same_line_with_pos(50.0);
         let display_name : String;
         if track.name.len() >= 34 {
-            display_name = track.name[..34].to_string() + &"...".to_string();
+            display_name = track.name[..25].to_string() + &"...".to_string();
         } else {
             display_name = track.name.to_string();
         }
@@ -254,12 +290,14 @@ fn show_album(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize)
             app.playing_context.current_album =
                 Mutex::new(Some(app.ui_state.albums_displayed[key].data.clone()));
         }
-        ui.push_text_wrap_pos_with_pos(-1.0);
         ui.same_line_with_pos(300.0);
         let duration_ms = Duration::from_millis(track.duration_ms.into());
         let seconds = duration_ms.as_secs() % 60;
         let minutes = (duration_ms.as_secs() / 60) % 60;
+        let grey_col = ui.push_style_color(StyleColor::Text,GREY);
         ui.text(format!("{}:{}",minutes, seconds));
+        grey_col.pop();
+        ui.separator();
     }
     ui.spacing();
     if ui.button(format!("CLOSE")) {
@@ -295,6 +333,12 @@ fn show_artist(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize
         }
         Err(_err) => {},
     }
+
+    let _font_title = ui.push_font(app.ui_state.font_header1.unwrap());
+    ui.text(&app.ui_state.artists_displayed[key].data.name);
+    _font_title.pop();
+    ui.spacing();
+
     if app.ui_state.artists_displayed[key].description.len() > 10 { // filter the "null" and ""
         ui.push_text_wrap_pos();
         ui.text(format!(
@@ -306,10 +350,23 @@ fn show_artist(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize
     for genre in &app.ui_state.artists_displayed[key].data.genres {
         ui.text(format!("{}", genre[0]));
     }
+    let _font_title = ui.push_font(app.ui_state.font_header2.unwrap());
     ui.text("Albums");
-    ui.separator();
+    _font_title.pop();
+    ui.spacing();
     for album in &app.ui_state.artists_displayed[key].albums {
-        ui.text(format!("{}", album.release_date));
+
+        let release_year : String;
+        if album.release_date.len() >=4 {
+            release_year = album.release_date[..4].to_string();
+        } else {
+            release_year = "".to_string();
+        }
+        const GREY: [f32; 4] = [0.5, 0.5, 0.5, 1.0];
+
+        let grey_col = ui.push_style_color(StyleColor::Text,GREY);
+        ui.text(format!("{}", release_year));
+        grey_col.pop();
         ui.same_line_with_pos(100.0);
         if ui.button(format!("{}", album.name)) {
             println!("Need to load album {} ", album.name);
@@ -328,6 +385,7 @@ fn show_artist(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize
                 app.ui_state.albums_displayed.push(new_album);
             }
         }
+        ui.separator();
     }
 
     ui.spacing();
@@ -338,7 +396,29 @@ fn show_artist(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize
 }
 
 pub fn main_loop(ui: &mut Ui<'_>, app: &mut AppContext) {
-    // Todo
+ 
+    const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
+    const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
+    const TRANSPARENT: [f32; 4] = [0.0, 0.0, 0.0, 0.0];
+    const LIGHT_GREY: [f32; 4] = [0.8, 0.8, 0.8, 1.0];
+    const SUPER_LIGHT_GREY: [f32; 4] = [0.9, 0.9, 0.9, 1.0];
+    let _white_bg = ui.push_style_color(StyleColor::WindowBg,WHITE);
+    let _title_bg = ui.push_style_color(StyleColor::TitleBg,WHITE);
+    let _title_bg_act = ui.push_style_color(StyleColor::TitleBgActive,LIGHT_GREY);
+    let _title_bg_coll = ui.push_style_color(StyleColor::TitleBgCollapsed,LIGHT_GREY);
+    let _frame_bg = ui.push_style_color(StyleColor::FrameBg,SUPER_LIGHT_GREY);
+    let _frame_bg_act = ui.push_style_color(StyleColor::FrameBgActive,LIGHT_GREY);
+    let _frame_bg_hov = ui.push_style_color(StyleColor::FrameBgHovered,LIGHT_GREY);
+    let _menu_bar_bg = ui.push_style_color(StyleColor::MenuBarBg,WHITE);
+    let _popup_bg = ui.push_style_color(StyleColor::PopupBg,SUPER_LIGHT_GREY);
+    let _black_text = ui.push_style_color(StyleColor::Text,BLACK);
+    let _button_transparent = ui.push_style_color(StyleColor::Button,TRANSPARENT);
+    let _button_hovered = ui.push_style_color(StyleColor::ButtonHovered,LIGHT_GREY);
+    let _rounding = ui.push_style_var(StyleVar::WindowRounding(10.0));
+    let _frame_rounding = ui.push_style_var(StyleVar::FrameRounding(5.0));
+    let _win_padding = ui.push_style_var(StyleVar::WindowPadding([20.0,20.0]));
+    let _font_normal = ui.push_font(app.ui_state.font_normal.unwrap());
+
     if let Some(menu_bar) = ui.begin_main_menu_bar() {
         if let Some(menu) = ui.begin_menu("Window") {
             //MenuItem::new("Undo").shortcut("CTRL+Z").build(ui);
@@ -369,7 +449,7 @@ pub fn main_loop(ui: &mut Ui<'_>, app: &mut AppContext) {
             app.ui_state.albums_displayed[key].data.artists[0].name,
             app.ui_state.albums_displayed[key].data.name
         ))
-        .size([300.0, 500.0], Condition::FirstUseEver)
+        .size([350.0, 500.0], Condition::FirstUseEver)
         .build(ui, || {
             show_album(ui, app, key, &mut key_remove);
         });
@@ -412,4 +492,6 @@ pub fn main_loop(ui: &mut Ui<'_>, app: &mut AppContext) {
         }
         Err(_err) => (),
     }
+    _font_normal.pop()
+
 }
