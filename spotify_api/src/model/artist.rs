@@ -55,4 +55,5 @@ pub struct SimplifiedArtistWithAlbums{
     pub data : SimplifiedArtist,
     pub albums : Vec<SimplifiedAlbum>,
     pub description : String,
+    pub load_state : u8,
 }

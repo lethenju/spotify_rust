@@ -39,6 +39,10 @@ pub struct AppContext {
     pub rx_album_library: std::sync::mpsc::Receiver<Vec<FullAlbum>>,
     pub tx_description : std::sync::mpsc::Sender<String>,
     pub rx_description: std::sync::mpsc::Receiver<String>,
+    pub tx_album_tracks : std::sync::mpsc::Sender<Vec<SimplifiedTrack>>,
+    pub rx_album_tracks: std::sync::mpsc::Receiver<Vec<SimplifiedTrack>>,
+    pub tx_albums_from_artist : std::sync::mpsc::Sender<Vec<SimplifiedAlbum>>,
+    pub rx_albums_from_artist: std::sync::mpsc::Receiver<Vec<SimplifiedAlbum>>,
 }
 
 pub fn init_ui_state() -> UiState {
@@ -68,6 +72,7 @@ fn show_spotify_player(ui: &Ui, app: &mut AppContext) {
                     data: artist.clone(),
                     albums: Vec::new(),
                     description: String::new(),
+                    load_state : 0,
                 };
                 let mut is_present = false;
                 for alb in &app.ui_state.artists_displayed {
@@ -239,6 +244,7 @@ fn show_library(ui: &Ui, app: &mut AppContext) {
                         data: album.artists[0].clone(),
                         albums: Vec::new(),
                         description: String::new(),
+                        load_state : 0,
                     })
             }
             grey_col.pop();
@@ -255,14 +261,29 @@ fn show_album(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize)
     ui.spacing();
     
     if app.ui_state.albums_displayed[key].tracks.len() == 0 {
-        let track_results = app
-            .easy_api
-            .lock()
-            .unwrap()
-            .get_tracks_from_album(&app.ui_state.albums_displayed[key].data.id)
-            .unwrap();
-        app.ui_state.albums_displayed[key].tracks = track_results.clone();
+
+        let (easy_api_thread, tx_thread) = (Arc::clone(&app.easy_api), app.tx_album_tracks.clone());
+        let id_album = app.ui_state.albums_displayed[key].data.id.clone();
+        thread::spawn(move || {
+            match easy_api_thread
+                .lock()
+                .unwrap()
+                .get_tracks_from_album(&id_album.clone())
+             {
+                Ok(tracks) => {
+                    tx_thread.send(tracks.clone()).unwrap();
+                }
+                _ => {}
+            };
+        });
     }
+    match app.rx_album_tracks.try_recv() {
+        Ok(track_results) => {
+            app.ui_state.albums_displayed[key].tracks = track_results.clone();
+        }
+        Err(_err) => {},
+    }
+
 
     for track in &app.ui_state.albums_displayed[key].tracks {
         const GREY: [f32; 4] = [0.5, 0.5, 0.5, 1.0];
@@ -307,32 +328,58 @@ fn show_album(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize)
 }
 
 fn show_artist(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize) {
-    if app.ui_state.artists_displayed[key].albums.len() == 0 {
-        let albums_results = app
-            .easy_api
-            .lock()
-            .unwrap()
-            .get_albums_from_artist(&app.ui_state.artists_displayed[key].data.id)
-            .unwrap();
-        app.ui_state.artists_displayed[key].albums = albums_results.clone();
-
+    if app.ui_state.artists_displayed[key].load_state == 0 {
+        app.ui_state.artists_displayed[key].load_state = 1;
         let (easy_api_thread, tx_thread) = (Arc::clone(&app.easy_api), app.tx_description.clone());
         let name_artist = app.ui_state.artists_displayed[key].data.name.clone();
         thread::spawn(move || {
-            let description = easy_api_thread
+            match easy_api_thread
+            .lock()
+            .unwrap()
+            .get_wiki_description(name_artist.clone())
+            {
+                Ok(description) => {
+                    tx_thread.send(description.clone()).unwrap();
+                }
+                _ => {}
+            };
+        });
+
+        let (easy_api_thread2, tx_thread2) = (Arc::clone(&app.easy_api), app.tx_albums_from_artist.clone());
+        let id_artist = app.ui_state.artists_displayed[key].data.id.clone();
+        thread::spawn(move || {
+            println!("Getting albums from artist id {}", id_artist);
+            match easy_api_thread2
                 .lock()
                 .unwrap()
-                .get_wiki_description(name_artist.clone())
-                .unwrap();
-            tx_thread.send(description.clone()).unwrap();
+                .get_albums_from_artist(&id_artist)
+            {
+                Ok(albums) => {
+                    tx_thread2.send(albums.clone()).unwrap();
+                }
+                _ => {}
+            }
         });
     }
+
+    if app.ui_state.artists_displayed[key].load_state < 3 // 2 item to load
+    {
     match app.rx_description.try_recv() {
         Ok(description) => {
-            app.ui_state.artists_displayed[key].description = description.clone();
+                app.ui_state.artists_displayed[key].description = description.clone();
+                app.ui_state.artists_displayed[key].load_state += 1;
+            }
+            Err(_err) => {},
         }
-        Err(_err) => {},
+        match app.rx_albums_from_artist.try_recv() {
+            Ok(albums_results) => {
+                app.ui_state.artists_displayed[key].albums = albums_results;
+                app.ui_state.artists_displayed[key].load_state += 1;
+            }
+            Err(_err) => {},
+        }
     }
+
 
     let _font_title = ui.push_font(app.ui_state.font_header1.unwrap());
     ui.text(&app.ui_state.artists_displayed[key].data.name);
@@ -346,7 +393,6 @@ fn show_artist(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize
             app.ui_state.artists_displayed[key].description
         ));
     }
-    //ui.pop_text_wrap_pos();
     for genre in &app.ui_state.artists_displayed[key].data.genres {
         ui.text(format!("{}", genre[0]));
     }
@@ -449,7 +495,7 @@ pub fn main_loop(ui: &mut Ui<'_>, app: &mut AppContext) {
             app.ui_state.albums_displayed[key].data.artists[0].name,
             app.ui_state.albums_displayed[key].data.name
         ))
-        .size([350.0, 500.0], Condition::FirstUseEver)
+        .size([400.0, 500.0], Condition::FirstUseEver)
         .build(ui, || {
             show_album(ui, app, key, &mut key_remove);
         });
