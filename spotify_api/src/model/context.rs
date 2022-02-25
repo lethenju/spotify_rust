@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use super::senum::{Type,RepeatState};
 use super::device::Device;
 use super::track::FullTrack;
+
+use std::time::SystemTime;
 /// Context object
 ///[get the users currently playing track](https://developer.spotify.com/web-api/get-the-users-currently-playing-track/)
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -28,7 +30,11 @@ pub struct FullPlayingContext {
     pub is_playing: bool,
     pub item: Option<FullTrack>,
 }
-
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct FullPlayingContextTimeStamped {
+    pub ctx : FullPlayingContext,
+    pub timestamp_systime: SystemTime,
+}
 
 
 ///[get the users currently playing track](https://developer.spotify.com/web-api/get-the-users-currently-playing-track/)

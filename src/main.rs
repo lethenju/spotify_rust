@@ -11,15 +11,11 @@ use imgui::*;
 use std::thread;
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
-use spotify_api::model::album::SimplifiedAlbum;
-use spotify_api::model::artist::SimplifiedArtist;
-use spotify_api::model::track::SimplifiedTrack;
-use spotify_api::model::track::FullTrack;
 
 mod interface;
 
+use std::time::Duration;
 
-use crate::interface::PlayingContext;
 use crate::interface::AppContext;
 use crate::interface::main_loop;
 use crate::interface::init_ui_state;
@@ -32,16 +28,12 @@ fn main() -> Result<(), failure::Error> {
     let (tx_description, rx_description) = mpsc::channel();
     let (tx_album_tracks, rx_album_tracks) = mpsc::channel();
     let (tx_albums_from_artist, rx_albums_from_artist) = mpsc::channel();
+    let (tx_player_context, rx_player_context) = mpsc::channel();
 
     // Creating the app context
     let mut app = AppContext{
         ui_state : init_ui_state(),
-        playing_context : PlayingContext{
-            current_artist : Mutex::new(None::<SimplifiedArtist>),
-            current_track : Mutex::new(None::<SimplifiedTrack>),
-            current_track_full : Mutex::new(None::<FullTrack>),
-            current_album : Mutex::new(None::<SimplifiedAlbum>),
-        },
+        playing_context : None,
         easy_api : Arc::new(Mutex::new(EasyAPI::new())),
         albums_data : Vec::new(),
         rx_album_library : rx,
@@ -53,6 +45,9 @@ fn main() -> Result<(), failure::Error> {
 
         tx_albums_from_artist : tx_albums_from_artist,
         rx_albums_from_artist : rx_albums_from_artist,
+
+        tx_player_context : tx_player_context,
+        rx_player_context : rx_player_context,
     };
 
     match app.easy_api.lock().unwrap().refresh() {
@@ -96,15 +91,27 @@ fn main() -> Result<(), failure::Error> {
 
     });
 
+    let (easy_api_thread, tx_thread) = (Arc::clone(&app.easy_api), app.tx_player_context.clone());
+    thread::spawn(move || {
+        loop{
+            // Check every 5 seconds
+            thread::sleep(Duration::from_secs(2));
+            match easy_api_thread
+            .lock()
+            .unwrap()
+            .get_playback_state()
+            {
+                Ok(playing_context) => {
+                    tx_thread.send(playing_context.clone()).unwrap();
+                }
+                _ => {}
+            };
+        }
+
+    });
+
+
     let mut system = support::init(file!());
-    app.playing_context.current_artist = Mutex::new(app.easy_api.lock().unwrap().get_currently_playing_artist().unwrap());
-    app.playing_context.current_track = Mutex::new(app.easy_api.lock().unwrap().get_currently_playing_track().unwrap());
-    app.playing_context.current_track_full = Mutex::new(app.easy_api.lock().unwrap().get_currently_playing_track_full().unwrap());
-    let current_track_full_guard = app.playing_context.current_track_full.lock().unwrap().clone();
-    app.playing_context.current_album = match current_track_full_guard {
-        Some(track) => {Mutex::new(Some(track.album.clone()))},
-        None => {Mutex::new(None)}
-    };
     app.ui_state.font_normal = Some(system.imgui.fonts().add_font(&[FontSource::TtfData {
         data: include_bytes!("../resources/SF-UI-Display-Regular.ttf"),
         size_pixels: 20.0,//system.font_size,

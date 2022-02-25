@@ -123,9 +123,8 @@ impl EasyAPI {
     }
 
     pub fn get_playback_state(
-        &mut self,
-        mut playing_context : FullPlayingContext,
-    )-> Result<(), std::io::Error> {
+        &mut self
+    )-> Result<Option<FullPlayingContext>, std::io::Error> {
         let mut result = String::new();
         let errno = self.command.get_playback_state(&mut result);
         match errno {
@@ -133,9 +132,9 @@ impl EasyAPI {
             _ => {}
         }
         if result.len() != 0 {
-            playing_context = serde_json::from_str(result.as_str()).unwrap();
+            return  Ok(Some(serde_json::from_str(result.as_str()).unwrap()));
         }
-        Ok(())
+        Ok((None))
     }
 }
 

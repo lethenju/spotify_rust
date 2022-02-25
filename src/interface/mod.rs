@@ -2,10 +2,11 @@ use imgui::*;
 use spotify_api::model::album::FullAlbum;
 use spotify_api::model::album::SimplifiedAlbum;
 use spotify_api::model::album::SimplifiedAlbumWithTracks;
-use spotify_api::model::artist::SimplifiedArtist;
 use spotify_api::model::artist::SimplifiedArtistWithAlbums;
-use spotify_api::model::track::FullTrack;
 use spotify_api::model::track::SimplifiedTrack;
+use spotify_api::model::context::FullPlayingContext;
+use spotify_api::model::context::FullPlayingContextTimeStamped;
+
 use spotify_api::EasyAPI;
 use std::collections::HashSet;
 use std::ffi::OsStr;
@@ -14,26 +15,23 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 
 use std::time::Duration;
+use std::time::{SystemTime};
 pub struct UiState {
     filter_album: String,
     genres_available: HashSet<String>,
     artists_displayed: Vec<SimplifiedArtistWithAlbums>,
     albums_displayed: Vec<SimplifiedAlbumWithTracks>,
     show_my_albums: bool,
+    dark_theme: bool,
     pub font_normal : Option<FontId>,
     pub font_header1 : Option<FontId>,
     pub font_header2 : Option<FontId>,
     pub font_light : Option<FontId>,
 }
-pub struct PlayingContext {
-    pub current_artist: Mutex<Option<SimplifiedArtist>>,
-    pub current_track: Mutex<Option<SimplifiedTrack>>,
-    pub current_track_full: Mutex<Option<FullTrack>>,
-    pub current_album: Mutex<Option<SimplifiedAlbum>>,
-}
+
 pub struct AppContext {
     pub ui_state: UiState,
-    pub playing_context: PlayingContext,
+    pub playing_context: Option<FullPlayingContextTimeStamped>,
     pub albums_data: Vec<FullAlbum>,
     pub easy_api: Arc<Mutex<EasyAPI>>,
     pub rx_album_library: std::sync::mpsc::Receiver<Vec<FullAlbum>>,
@@ -43,6 +41,9 @@ pub struct AppContext {
     pub rx_album_tracks: std::sync::mpsc::Receiver<Vec<SimplifiedTrack>>,
     pub tx_albums_from_artist : std::sync::mpsc::Sender<Vec<SimplifiedAlbum>>,
     pub rx_albums_from_artist: std::sync::mpsc::Receiver<Vec<SimplifiedAlbum>>,
+
+    pub tx_player_context : std::sync::mpsc::Sender<Option<FullPlayingContext>>,
+    pub rx_player_context: std::sync::mpsc::Receiver<Option<FullPlayingContext>>,
 }
 
 pub fn init_ui_state() -> UiState {
@@ -56,73 +57,83 @@ pub fn init_ui_state() -> UiState {
         font_header1 : None,
         font_header2 : None,
         font_light : None,
+        dark_theme: true,
     };
 }
 
 fn show_spotify_player(ui: &Ui, app: &mut AppContext) {
     ui.text("Now listening to:");
     ui.spacing();
-    let current_artist_guard = app.playing_context.current_artist.lock().unwrap();
-    match &*current_artist_guard {
-        Some(artist) => {
-            if ui.button(&artist.name) {
-                // add an artist window
-                // if there isnt one already
-                let new_artist = SimplifiedArtistWithAlbums {
-                    data: artist.clone(),
-                    albums: Vec::new(),
-                    description: String::new(),
-                    load_state : 0,
-                };
-                let mut is_present = false;
-                for alb in &app.ui_state.artists_displayed {
-                    if alb.data.id == artist.id {
-                        println!("Artist {} already shown up", artist.name);
-                        is_present = true;
-                        break;
-                    }
-                }
-                if !is_present {
-                    app.ui_state.artists_displayed.push(new_artist);
-                }
+
+    match app.rx_player_context.try_recv() {
+        Ok(playing_context) => {
+            match playing_context {
+                Some(context ) =>{
+                    app.playing_context = Some(FullPlayingContextTimeStamped{ctx : context.clone(), timestamp_systime : SystemTime::now()});
+                },
+                _ => {}
             }
-            ui.same_line();
         }
-        None => {}
-    };
-    let current_track_guard = app.playing_context.current_track.lock().unwrap();
-    match &*current_track_guard {
-        Some(track) => {
-            ui.text(&track.name);
-            let current_album_local = app.playing_context.current_album.lock().unwrap();
-            match &*current_album_local {
-                Some(album) => {
-                    if ui.button(&album.name) {
-                        println!("Need to load album {} ", album.name);
-                        let new_album = SimplifiedAlbumWithTracks {
-                            data: album.clone(),
-                            tracks: Vec::new(),
+        Err(_err) => {},
+    }
+
+
+    match &app.playing_context {
+       Some(context) => {
+
+ 
+            match &context.ctx.item {
+                Some(track) => {
+                    if ui.button(&track.artists[0].name) {
+                        // add an artist window
+                        // if there isnt one already
+
+                        let new_artist = SimplifiedArtistWithAlbums {
+                            data: track.artists[0].clone(),
+                            albums: Vec::new(),
+                            description: String::new(),
+                            load_state : 0,
                         };
                         let mut is_present = false;
-                        for alb in &app.ui_state.albums_displayed {
-                            if alb.data.id == album.id {
-                                println!("Album {} already shown up", album.name);
+                        for alb in &app.ui_state.artists_displayed {
+                            if alb.data.id == track.artists[0].id {
+                                println!("Artist {} already shown up", track.artists[0].name);
                                 is_present = true;
                                 break;
                             }
                         }
                         if !is_present {
-                            app.ui_state.albums_displayed.push(new_album);
+                            app.ui_state.artists_displayed.push(new_artist);
                         }
                     }
-                }
-                None => {}
-            }
-        }
-        None => {}
+
+                    ui.same_line();
+                    ui.text(&track.name);
+
+
+                    match context.ctx.progress_ms {
+                        Some(progress) => {
+
+                            let progress_dur = Duration::from_millis(progress as u64);
+                            let progress_corrected : Duration;
+                            if context.ctx.is_playing{
+                                progress_corrected = progress_dur + context.timestamp_systime.elapsed().unwrap();
+                            }  else {
+                                progress_corrected = progress_dur;
+                            }
+                            let duration = Duration::from_millis(track.duration_ms as u64);
+                            ui.text(format!("{}m{}s / {}m{}s",progress_corrected.as_secs()/60, progress_corrected.as_secs()%60,
+                                                              duration.as_secs()/60, duration.as_secs()%60,));
+                        }
+                        _ => {}
+                    }
+                },
+                _ => {}
+            };
+
+       },
+       _ => {}
     };
-    //ui.text(&current_track.name);
-    //ui.button("Pause");
 }
 
 fn show_library(ui: &Ui, app: &mut AppContext) {
@@ -304,12 +315,14 @@ fn show_album(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize)
                 .unwrap()
                 .play_track(track, Some(&app.ui_state.albums_displayed[key].data))
                 .unwrap();
+                /*
             app.playing_context.current_artist = Mutex::new(Some(
                 app.ui_state.albums_displayed[key].data.artists[0].clone(),
             ));
             app.playing_context.current_track = Mutex::new(Some(track.clone()));
             app.playing_context.current_album =
                 Mutex::new(Some(app.ui_state.albums_displayed[key].data.clone()));
+                */
         }
         ui.same_line_with_pos(300.0);
         let duration_ms = Duration::from_millis(track.duration_ms.into());
@@ -448,27 +461,48 @@ pub fn main_loop(ui: &mut Ui<'_>, app: &mut AppContext) {
     const TRANSPARENT: [f32; 4] = [0.0, 0.0, 0.0, 0.0];
     const LIGHT_GREY: [f32; 4] = [0.8, 0.8, 0.8, 1.0];
     const SUPER_LIGHT_GREY: [f32; 4] = [0.9, 0.9, 0.9, 1.0];
-    let _white_bg = ui.push_style_color(StyleColor::WindowBg,WHITE);
-    let _title_bg = ui.push_style_color(StyleColor::TitleBg,WHITE);
-    let _title_bg_act = ui.push_style_color(StyleColor::TitleBgActive,LIGHT_GREY);
-    let _title_bg_coll = ui.push_style_color(StyleColor::TitleBgCollapsed,LIGHT_GREY);
-    let _frame_bg = ui.push_style_color(StyleColor::FrameBg,SUPER_LIGHT_GREY);
-    let _frame_bg_act = ui.push_style_color(StyleColor::FrameBgActive,LIGHT_GREY);
-    let _frame_bg_hov = ui.push_style_color(StyleColor::FrameBgHovered,LIGHT_GREY);
-    let _menu_bar_bg = ui.push_style_color(StyleColor::MenuBarBg,WHITE);
-    let _popup_bg = ui.push_style_color(StyleColor::PopupBg,SUPER_LIGHT_GREY);
-    let _black_text = ui.push_style_color(StyleColor::Text,BLACK);
-    let _button_transparent = ui.push_style_color(StyleColor::Button,TRANSPARENT);
-    let _button_hovered = ui.push_style_color(StyleColor::ButtonHovered,LIGHT_GREY);
+    /*if app.ui_state.dark_theme {
+        let _main_bg = ui.push_style_color(StyleColor::WindowBg,BLACK);
+        let _title_bg = ui.push_style_color(StyleColor::TitleBg,BLACK);
+        let _title_bg_act = ui.push_style_color(StyleColor::TitleBgActive,LIGHT_GREY);
+        let _title_bg_coll = ui.push_style_color(StyleColor::TitleBgCollapsed,LIGHT_GREY);
+        let _frame_bg = ui.push_style_color(StyleColor::FrameBg,SUPER_LIGHT_GREY);
+        let _frame_bg_act = ui.push_style_color(StyleColor::FrameBgActive,LIGHT_GREY);
+        let _frame_bg_hov = ui.push_style_color(StyleColor::FrameBgHovered,LIGHT_GREY);
+        let _menu_bar_bg = ui.push_style_color(StyleColor::MenuBarBg,BLACK);
+        let _popup_bg = ui.push_style_color(StyleColor::PopupBg,SUPER_LIGHT_GREY);
+        let _text_color = ui.push_style_color(StyleColor::Text,WHITE);
+        let _button_transparent = ui.push_style_color(StyleColor::Button,TRANSPARENT);
+        let _button_hovered = ui.push_style_color(StyleColor::ButtonHovered,LIGHT_GREY);
+    } else {*/
+        let _main_bg = ui.push_style_color(StyleColor::WindowBg,WHITE);
+        let _title_bg = ui.push_style_color(StyleColor::TitleBg,WHITE);
+        let _title_bg_act = ui.push_style_color(StyleColor::TitleBgActive,LIGHT_GREY);
+        let _title_bg_coll = ui.push_style_color(StyleColor::TitleBgCollapsed,LIGHT_GREY);
+        let _frame_bg = ui.push_style_color(StyleColor::FrameBg,SUPER_LIGHT_GREY);
+        let _frame_bg_act = ui.push_style_color(StyleColor::FrameBgActive,LIGHT_GREY);
+        let _frame_bg_hov = ui.push_style_color(StyleColor::FrameBgHovered,LIGHT_GREY);
+        let _menu_bar_bg = ui.push_style_color(StyleColor::MenuBarBg,WHITE);
+        let _popup_bg = ui.push_style_color(StyleColor::PopupBg,SUPER_LIGHT_GREY);
+        let _text_color = ui.push_style_color(StyleColor::Text,BLACK);
+        let _button_transparent = ui.push_style_color(StyleColor::Button,TRANSPARENT);
+        let _button_hovered = ui.push_style_color(StyleColor::ButtonHovered,LIGHT_GREY);
+    //}
     let _rounding = ui.push_style_var(StyleVar::WindowRounding(10.0));
     let _frame_rounding = ui.push_style_var(StyleVar::FrameRounding(5.0));
     let _win_padding = ui.push_style_var(StyleVar::WindowPadding([20.0,20.0]));
     let _font_normal = ui.push_font(app.ui_state.font_normal.unwrap());
 
+
     if let Some(menu_bar) = ui.begin_main_menu_bar() {
         if let Some(menu) = ui.begin_menu("Window") {
             //MenuItem::new("Undo").shortcut("CTRL+Z").build(ui);
             ui.checkbox("Show my albums", &mut app.ui_state.show_my_albums);
+            menu.end();
+        }
+        if let Some(menu) = ui.begin_menu("Theme") {
+            //MenuItem::new("Undo").shortcut("CTRL+Z").build(ui);
+            ui.checkbox("Dark theme", &mut app.ui_state.dark_theme);
             menu.end();
         }
         menu_bar.end();
