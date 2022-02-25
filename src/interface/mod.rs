@@ -13,6 +13,8 @@ use std::sync::{Arc, Mutex};
 
 use std::thread;
 use std::sync::mpsc;
+
+use std::time::Duration;
 pub struct UiState {
     filter_album: String,
     genres_available: HashSet<String>,
@@ -233,7 +235,13 @@ fn show_album(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize)
     for track in &app.ui_state.albums_displayed[key].tracks {
         ui.text(format!("{}", track.track_number));
         ui.same_line_with_pos(30.0);
-        if ui.button(format!("{}", track.name)) {
+        let display_name : String;
+        if track.name.len() >= 34 {
+            display_name = track.name[..34].to_string() + &"...".to_string();
+        } else {
+            display_name = track.name.to_string();
+        }
+        if ui.button(format!("{}", display_name)) {
             app.easy_api
                 .lock()
                 .unwrap()
@@ -246,6 +254,12 @@ fn show_album(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize)
             app.playing_context.current_album =
                 Mutex::new(Some(app.ui_state.albums_displayed[key].data.clone()));
         }
+        ui.push_text_wrap_pos_with_pos(-1.0);
+        ui.same_line_with_pos(300.0);
+        let duration_ms = Duration::from_millis(track.duration_ms.into());
+        let seconds = duration_ms.as_secs() % 60;
+        let minutes = (duration_ms.as_secs() / 60) % 60;
+        ui.text(format!("{}:{}",minutes, seconds));
     }
     ui.spacing();
     if ui.button(format!("CLOSE")) {
