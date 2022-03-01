@@ -18,3 +18,4 @@ imgui-glium-renderer = "0.8.2"
 imgui-winit-support = "0.8.2"
 glium = { version = "0.30", default-features = true }
 clipboard = "0.5"
+rand = "0.8.5"

@@ -12,6 +12,7 @@ use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::sync::{Arc, Mutex};
 
+use rand::*;
 use std::thread;
 
 use std::time::Duration;
@@ -174,17 +175,32 @@ fn show_library(ui: &Ui, app: &mut AppContext) {
                 app.albums_data
                     .sort_by(|a, b| b.artists[0].name.cmp(&a.artists[0].name));
             }
-            /*
-            if ui.button("Popularity Min..Max"){
-                app.albums_data.sort_by(|a, b| a.popularity.cmp(&b.popularity));
+
+            menu.end();
+
+        }
+        if let Some(menu) = ui.begin_menu("Choose random") {
+            let mut rng = rand::thread_rng();
+
+            let n: u16 = rng.gen();
+            let album = &app.albums_data[(n as usize) % app.albums_data.len()];
+            println!("Need to load album {} ", album.name);
+            let new_album = SimplifiedAlbumWithTracks {
+                data: album.clone().to_simplified(),
+                tracks: Vec::new(),
+            };
+            let mut is_present = false;
+            for alb in &app.ui_state.albums_displayed {
+                if alb.data.id == album.id {
+                    is_present = true;
+                    break;
+                }
             }
-            if ui.button("Popularity Max..Min"){
-                app.albums_data.sort_by(|a, b| b.popularity.cmp(&a.popularity));
+            if !is_present {
+                app.ui_state.albums_displayed.push(new_album);
             }
-            */
             menu.end();
         }
-
         menu_bar.end();
     }
 
