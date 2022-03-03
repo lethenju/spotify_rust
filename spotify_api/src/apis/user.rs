@@ -32,9 +32,10 @@ impl EasyAPI {
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
         for x in 0..size {
-            final_result.push(serde_json::from_str(
-                &serde_json::to_string(&v["items"][x]["album"]).unwrap(),
-            )?);
+            let mut alb : model::album::FullAlbum;
+            alb = serde_json::from_str(&serde_json::to_string(&v["items"][x]["album"]).unwrap(),)?;
+            alb.available_markets.clear();
+            final_result.push(alb);
         }
         Ok(())
     }
@@ -69,6 +70,7 @@ impl EasyAPI {
     }
     /// Write library
     pub fn write_library(&mut self, library:  Vec<model::album::FullAlbum>)-> Result<(), std::io::Error>{
+
             let v = serde_json::to_string(&library);
             let mut buffer = File::create("library").unwrap();
             write!(buffer,"{}", v.unwrap())

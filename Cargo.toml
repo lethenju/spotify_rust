@@ -2,7 +2,7 @@
 name = "spotify_rust"
 version = "0.0.5"
 authors = ["Julien LE THENO"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 spotify_api = {path = "spotify_api"}

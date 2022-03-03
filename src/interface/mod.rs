@@ -321,7 +321,8 @@ fn show_album(ui: &Ui, app: &mut AppContext, key: usize, key_remove: &mut usize)
         ui.same_line_with_pos(50.0);
         let display_name : String;
         if track.name.len() >= 34 {
-            display_name = track.name[..25].to_string() + &"...".to_string();
+            // Safe way to get first 25 characters through Unicode
+            display_name = track.name.chars().take(25).collect::<String>() + &"...".to_string();
         } else {
             display_name = track.name.to_string();
         }
@@ -551,6 +552,7 @@ pub fn main_loop(ui: &mut Ui<'_>, app: &mut AppContext) {
         });
     }
     if key_remove > 0 {
+        app.ui_state.albums_displayed[key_remove - 1].tracks = Vec::new();
         app.ui_state.albums_displayed.remove(key_remove - 1);
     }
 

@@ -134,7 +134,7 @@ impl EasyAPI {
         if result.len() != 0 {
             return  Ok(Some(serde_json::from_str(result.as_str()).unwrap()));
         }
-        Ok((None))
+        Ok(None)
     }
 }
 

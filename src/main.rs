@@ -95,7 +95,7 @@ fn main() -> Result<(), failure::Error> {
     thread::spawn(move || {
         loop{
             // Check every 5 seconds
-            thread::sleep(Duration::from_secs(2));
+            thread::sleep(Duration::from_secs(5));
             match easy_api_thread
             .lock()
             .unwrap()

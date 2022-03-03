@@ -227,13 +227,12 @@ impl Command {
 
 
     pub fn get_wiki_description(&mut self, search: String, result: &mut String) -> Result<(), std::io::Error> {
-        let mut list_headers = List::new();
         let _search = utf8_percent_encode(&search, DEFAULT_ENCODE_SET).to_string();
         return self.communicator.perform(
             format!("https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=true&format=json&exchars=300&titles={}",_search).as_str(),
             "",
             "",
-            list_headers,
+            List::new(),
             "GET",
             &mut *result,
         );
