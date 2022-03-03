@@ -67,8 +67,29 @@ impl Command {
             &mut result,
         );
     }
-    pub fn pause(&self) -> Result<(), std::io::Error> {
-        unimplemented!()
+    pub fn pause(&mut self) -> Result<(), std::io::Error> {
+        let mut result = String::new();
+        let body_params = String::new();
+        let mut list_headers = List::new();
+        let _auth = format!(
+            "{}{}",
+            "Authorization: Bearer ",
+            self.communicator.get_access_token()
+        );
+
+        list_headers.append("Accept: application/json").unwrap();
+        list_headers
+            .append("Content-Type: application/json")
+            .unwrap();
+        list_headers.append(&_auth).unwrap();
+        return self.communicator.perform(
+            "https://api.spotify.com/v1/me/player/pause",
+            "",
+            &body_params.as_str(),
+            list_headers,
+            "PUT",
+            &mut result,
+        );
     }
     pub fn next(&self) -> Result<(), std::io::Error> {
         unimplemented!()
@@ -219,12 +240,6 @@ impl Command {
             .retrieve_refresh_token(base_64_secret, authorization_code)
             .unwrap())
     }
-
-
-
-
-
-
 
     pub fn get_wiki_description(&mut self, search: String, result: &mut String) -> Result<(), std::io::Error> {
         let _search = utf8_percent_encode(&search, DEFAULT_ENCODE_SET).to_string();

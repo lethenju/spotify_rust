@@ -4,10 +4,13 @@ use super::super::EasyAPI;
 use serde_json::Value;
 
 impl EasyAPI {
+
+    pub fn resume(&mut self) -> Result<(), std::io::Error> {
+        return self.command.play("", "", "", "");
+    }
     /// Pauses the playback.
-    /// Not implemented yet
     pub fn pause(&mut self) -> Result<(), std::io::Error> {
-        unimplemented!();
+        return self.command.pause();
     }
     /// Returns the next song in the active context
     /// Not implemented yet

@@ -128,6 +128,18 @@ fn show_spotify_player(ui: &Ui, app: &mut AppContext) {
                         }
                         _ => {}
                     }
+
+                    // Pause / Play Button
+                    if context.ctx.is_playing {
+                        if ui.button("Pause") {
+                            // Pause
+                            app.easy_api.lock().unwrap().pause();
+                        }
+                    } else {
+                        if ui.button("Play") {
+                            app.easy_api.lock().unwrap().resume();
+                        }
+                    }
                 },
                 _ => {}
             };
