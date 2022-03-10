@@ -79,7 +79,7 @@ fn show_spotify_player(ui: &Ui, app: &mut AppContext) {
     }
 
 
-    match &app.playing_context {
+    match &mut app.playing_context {
        Some(context) => {
 
  
@@ -133,11 +133,14 @@ fn show_spotify_player(ui: &Ui, app: &mut AppContext) {
                     if context.ctx.is_playing {
                         if ui.button("Pause") {
                             // Pause
-                            app.easy_api.lock().unwrap().pause();
+                            app.easy_api.lock().unwrap().pause().unwrap();
+                            context.ctx.is_playing = false;
                         }
                     } else {
                         if ui.button("Play") {
-                            app.easy_api.lock().unwrap().resume();
+                            app.easy_api.lock().unwrap().resume().unwrap();
+                            context.ctx.is_playing = true;
+
                         }
                     }
                 },
