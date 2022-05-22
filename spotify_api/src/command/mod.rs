@@ -91,6 +91,8 @@ impl Command {
             &mut result,
         );
     }
+
+    #[allow(dead_code)]
     pub fn next(&self) -> Result<(), std::io::Error> {
         unimplemented!()
     }
