@@ -50,13 +50,16 @@ fn main() -> Result<(), failure::Error> {
         rx_player_context : rx_player_context,
     };
 
-    match app.easy_api.lock().unwrap().refresh() {
+    let my_response = app.easy_api.lock().unwrap().refresh();
+    
+    match my_response {
         Ok(()) => {}
         Err(_err) => {
             token_retrieval::retrieve_tokens(&mut app.easy_api.lock().unwrap()).unwrap();
             app.easy_api.lock().unwrap().refresh().unwrap();
         }
     }
+
 
     let (easy_api_thread, tx_thread) = (Arc::clone(&app.easy_api),tx.clone());
     let _handle = thread::spawn(move || {
