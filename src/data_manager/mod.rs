@@ -5,40 +5,67 @@
 
 use std::collections::HashMap;
 
-pub struct DataStore {
-    data: HashMap<String, String>,
-    subscribers : HashMap<String, Vec<Box<dyn Fn(&str) + Send>>>,
+use std::sync::Mutex;
+
+use spotify_api::model::album::FullAlbum;
+use spotify_api::model::album::SimplifiedAlbum;
+use spotify_api::model::album::SimplifiedAlbumWithTracks;
+use spotify_api::model::artist::SimplifiedArtistWithAlbums;
+use spotify_api::model::track::SimplifiedTrack;
+use spotify_api::model::context::FullPlayingContext;
+use spotify_api::model::context::FullPlayingContextTimeStamped;
+
+struct DataStore<T: Clone> {
+    data: Mutex<HashMap<String, T>>,
+    subscribers : Mutex<HashMap<String, Vec<Box<dyn Fn(&T) + Send + 'static>>>>,
 }
 
-impl DataStore {
+pub struct DataManager {
+    pub album_lists : DataStore<Vec<FullAlbum>>,
+    pub albums  :  DataStore<FullAlbum>,
+}
+
+
+impl<T: Clone> DataStore<T> {
     pub fn new() -> Self {
         DataStore {
-            data: HashMap::new(),
-            subscribers: HashMap::new(),
+            data: Mutex::new(HashMap::new()),
+            subscribers: Mutex::new(HashMap::new()),
         }
     }
 
-    pub fn write(&mut self, key: &str, value: &str) {
-        self.data.insert(key.to_owned(), value.to_owned());
-        if let Some(subscribers) = self.subscribers.get(key) {
-            for subscriber in subscribers {
-                subscriber(value);
+    pub fn write(&mut self, key: &str, value: T) {
+        let mut data = self.data.lock().unwrap();
+        let mut subscribers = self.subscribers.lock().unwrap();
+
+        if let Some(subscribers) = subscribers.get_mut(key) {
+            for callback in subscribers.iter() {
+                callback(&value);
             }
         }
+        data.insert(key.to_owned(), value);
     }
 
-    pub fn read(&self, key: &str) -> Option<&String> {
-        self.data.get(key)
+    pub fn read(&self, key: &str) -> Option<T> {
+        let data = self.data.lock().unwrap();
+        data.get(key).cloned()
     }
 
     pub  fn subscribe<F> (&mut self, key: &str, callback: F)
     where 
-        F: Fn(&str) + Send + 'static,
+        F: Fn(&T) + Send + 'static,
     {
-        if let Some(subscribers) = self.subscribers.get_mut(key) {
-            subscribers.push(Box::new(callback));
-        } else {
-            self.subscribers.insert(key.to_owned(), vec![Box::new(callback)]);
+        let mut subscribers = self.subscribers.lock().unwrap();
+        subscribers.entry(key.to_owned()).or_insert_with(Vec::new).push(Box::new(callback));
+    }
+}
+
+impl DataManager {
+    pub fn new() -> Self {
+        DataManager {
+            album_lists : DataStore::new(),
+            albums      : DataStore::new(),
         }
     }
+
 }

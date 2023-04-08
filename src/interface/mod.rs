@@ -37,7 +37,7 @@ pub struct AppContext {
     pub playing_context: Option<FullPlayingContextTimeStamped>,
     pub albums_data: Vec<FullAlbum>,
     pub easy_api: Arc<Mutex<EasyAPI>>,
-    pub data_store: data_manager::DataStore,
+    pub data_manager_api: data_manager::DataManager,
     pub rx_album_library: std::sync::mpsc::Receiver<Vec<FullAlbum>>,
     pub tx_description : std::sync::mpsc::Sender<String>,
     pub rx_description: std::sync::mpsc::Receiver<String>,

@@ -39,7 +39,7 @@ fn main() -> Result<(), failure::Error> {
         easy_api : Arc::new(Mutex::new(EasyAPI::new())),
         albums_data : Vec::new(),
 
-        data_store : data_manager::DataStore::new(),
+        data_manager_api : data_manager::DataManager::new(),
 
         rx_album_library : rx,
         tx_description : tx_description,
@@ -86,7 +86,11 @@ fn main() -> Result<(), failure::Error> {
                 if albums_data_chunk.len() <20 {
                     ended =  true;
                 }
+                // TODO REMOVE
                 tx_thread.send(albums_data_chunk.clone()).unwrap();
+
+                data_manager_thread.album_lists.write("album_library_chunks", albums_data_chunk);
+
                 //albums_data_library.extend(albums_data_chunk.clone());
                 i+=20;
             }
@@ -95,6 +99,8 @@ fn main() -> Result<(), failure::Error> {
             easy_api_thread.lock().unwrap().write_library(albums_data_library).unwrap();
         } else {
             tx_thread.send(albums_data_library).unwrap();
+
+            data_manager_thread.album_lists.write("full_album_library", albums_data_library);
         }
 
     });
