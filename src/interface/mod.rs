@@ -12,6 +12,8 @@ use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::sync::{Arc, Mutex};
 
+use crate::data_manager;
+
 use rand::*;
 use std::thread;
 
@@ -35,6 +37,7 @@ pub struct AppContext {
     pub playing_context: Option<FullPlayingContextTimeStamped>,
     pub albums_data: Vec<FullAlbum>,
     pub easy_api: Arc<Mutex<EasyAPI>>,
+    pub data_store: data_manager::DataStore,
     pub rx_album_library: std::sync::mpsc::Receiver<Vec<FullAlbum>>,
     pub tx_description : std::sync::mpsc::Sender<String>,
     pub rx_description: std::sync::mpsc::Receiver<String>,

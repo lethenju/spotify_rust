@@ -13,12 +13,14 @@ use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 
 mod interface;
+mod data_manager;
 
 use std::time::Duration;
 
 use crate::interface::AppContext;
 use crate::interface::main_loop;
 use crate::interface::init_ui_state;
+
 
 
 fn main() -> Result<(), failure::Error> {
@@ -36,6 +38,9 @@ fn main() -> Result<(), failure::Error> {
         playing_context : None,
         easy_api : Arc::new(Mutex::new(EasyAPI::new())),
         albums_data : Vec::new(),
+
+        data_store : data_manager::DataStore::new(),
+
         rx_album_library : rx,
         tx_description : tx_description,
         rx_description : rx_description,
