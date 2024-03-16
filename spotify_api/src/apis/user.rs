@@ -29,6 +29,8 @@ impl EasyAPI {
             return errno;
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
+        // Total number of albums is known in the request 
+        println!("Total number of albums  = {}", v["total"]);
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
         for x in 0..size {
@@ -38,6 +40,23 @@ impl EasyAPI {
             final_result.push(alb);
         }
         Ok(())
+    }
+
+    pub fn get_my_albums_count(&mut self) -> Result<u32, std::io::Error>
+    {
+    
+        let mut result = String::new();
+        let errno = self.command.get_my_albums(0, &mut result);
+        match errno {
+            Ok(()) => (),
+            Err(e) => return Err(e) 
+        }
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+        // Total number of albums is known in the request 
+        println!("Total number of albums  = {}", v["total"]);
+        
+        let total_count : u64 = v["total"].as_u64().unwrap();
+        Ok(total_count as u32)
     }
 
     /// Load library

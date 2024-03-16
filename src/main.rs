@@ -69,9 +69,30 @@ fn main() -> Result<(), failure::Error> {
             Ok(()) => {},
             Err(_err) => {}
         }
-        if albums_data_library.is_empty() {
-            println!("Empty local library : downloading..");
+        // TODO Get number of albums from API and if different, download missing albums
+        let mut count_result = 0;
+        match easy_api_thread.lock().unwrap().get_my_albums_count() {
+            Ok(count) =>  {count_result = count}, 
+            Err(e)  =>  {} 
+        }
 
+        let mut redownload : bool  = false;
+
+        if albums_data_library.len() as u32 != count_result
+        {
+            println!("Different size for album library local {} and saved {}", albums_data_library.len(), count_result);
+            redownload = true
+        }
+
+
+        if albums_data_library.is_empty() {
+            println!("Empty local library ");
+            redownload = true
+        }
+
+        if redownload {
+
+            println!(".. Downloading");
             let mut ended = false;
             let mut i = 0;
             while !ended {
@@ -82,12 +103,14 @@ fn main() -> Result<(), failure::Error> {
                     ended =  true;
                 }
                 tx_thread.send(albums_data_chunk.clone()).unwrap();
-                //albums_data_library.extend(albums_data_chunk.clone());
+                albums_data_library.extend(albums_data_chunk.clone());
                 i+=20;
             }
             println!("Local library downloaded : saving..");
 
             easy_api_thread.lock().unwrap().write_library(albums_data_library).unwrap();
+            println!("Local library saved !");
+
         } else {
             tx_thread.send(albums_data_library).unwrap();
         }
