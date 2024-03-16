@@ -36,7 +36,7 @@ pub struct FullAlbum {
     //pub copyrights: Vec<HashMap<String, String>>,
     //pub external_ids: HashMap<String, String>,
     pub external_urls: HashMap<String, String>,
-    //pub genres: Vec<String>,
+    pub genres: Vec<String>,
     pub href: String,
     pub id: String,
     pub images: Vec<Image>,

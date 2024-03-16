@@ -102,8 +102,8 @@ fn main() -> Result<(), failure::Error> {
             for i in 0..number_of_requests {
                 let mut albums_data_chunk = Vec::new();
                 // Display percentage for loaded albums
-                let percent_loaded : f32 = i as f32 * page_size as f32 / count_result as f32;
-                println!("Loading albums {}% ", percent_loaded);
+                let percent_loaded : f32 = (i as f32 * page_size as f32 / count_result as f32) * 100 as f32;
+                println!("Loading albums {}% ", percent_loaded );
                 easy_api_thread.lock().unwrap().get_my_albums_chunk(i * page_size, page_size, &mut albums_data_chunk).unwrap();
 
                 tx_thread.send(albums_data_chunk.clone()).unwrap();

@@ -25,6 +25,28 @@ impl EasyAPI {
         Ok(final_result)
     }
 
+    /// Gets the genres list associated with an artist
+    pub fn get_genres_from_artist(
+        &mut self,
+        id_artist: &str,
+    ) -> Result<Vec<String>, std::io::Error> {
+        let mut result = String::new();
+        let mut final_result: Vec<String> = Vec::new();
+        match self.command.get_artist_data(id_artist, &mut result) {
+            Ok(_ok) => {}
+            Err(error) => return Err(error),
+        }
+        let v: Value = serde_json::from_str(result.as_str()).unwrap();
+
+        let size = v["genres"].as_array().unwrap().len();
+        for x in 0..size {
+            final_result.push(serde_json::from_str(
+                &serde_json::to_string(&v["genres"][x]).unwrap(),
+            )?);
+        }
+        Ok(final_result)
+    }
+
     pub fn get_albums_from_artist(
         &mut self,
         id_artist: &str,

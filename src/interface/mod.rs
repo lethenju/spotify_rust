@@ -23,6 +23,7 @@ pub struct UiState {
     artists_displayed: Vec<SimplifiedArtistWithAlbums>,
     albums_displayed: Vec<SimplifiedAlbumWithTracks>,
     show_my_albums: bool,
+    is_this_genre_checked : Vec<bool>,
     dark_theme: bool,
     pub font_normal : Option<FontId>,
     pub font_header1 : Option<FontId>,
@@ -161,7 +162,23 @@ fn show_library(ui: &Ui, app: &mut AppContext) {
     if let Some(menu_bar) = ui.begin_menu_bar() {
         if let Some(menu) = ui.begin_menu("Filters") {
             for genre in &app.ui_state.genres_available {
-                ui.text(format!("{}", genre));
+                let mut is_checked : bool = false;
+                if ui.checkbox(format!("{}", genre), &mut is_checked)
+                {
+                    if is_checked {
+                        app.albums_data
+                            .sort_by (|a, b |
+                                if !a.genres.is_empty()
+                                {
+                                    return a.genres[0].cmp(genre)
+                                }else
+                                {
+                                    // Si pas de genre, alors alphabétique
+                                    return a.name.cmp(&b.name)
+                                }
+                        )
+                    }
+                }
             }
             // TODO Filter by genres with checkbox
             menu.end();
@@ -537,6 +554,14 @@ pub fn main_loop(ui: &mut Ui<'_>, app: &mut AppContext) {
             ui.checkbox("Dark theme", &mut app.ui_state.dark_theme);
             menu.end();
         }
+        if let Some(menu) = ui.begin_menu("Library") {
+            //MenuItem::new("Undo").shortcut("CTRL+Z").build(ui);
+            if ui.button("Resync")
+            {
+                
+            }
+            menu.end();
+        }
         menu_bar.end();
     }
 
@@ -591,15 +616,8 @@ pub fn main_loop(ui: &mut Ui<'_>, app: &mut AppContext) {
         Ok(albums) => {
             app.albums_data.extend(albums.clone());
             for alb in albums {
-                // TODO Debug : theres no genre at all lol
-                match &alb.artists[0].genres {
-                    Some(genres) => {
-                        for genre in genres {
-                            println!("Genre added {}", genre);
-                            app.ui_state.genres_available.insert(genre.clone());
-                        }
-                    }
-                    _ => {}
+                for genre in alb.genres {
+                    app.ui_state.genres_available.insert(genre.clone());
                 }
             }
         }

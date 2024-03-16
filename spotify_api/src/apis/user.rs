@@ -29,6 +29,17 @@ impl EasyAPI {
         for x in 0..size {
             let mut alb : model::album::FullAlbum;
             alb = serde_json::from_str(&serde_json::to_string(&v["items"][x]["album"]).unwrap(),)?;
+            match self.get_genres_from_artist(&alb.artists[0].id)
+            {
+                Ok(result_genres) => {
+                    if !result_genres.is_empty()
+                    {
+                        alb.genres = result_genres;
+                        println!("Genre for this album {} : {}", alb.name, alb.genres[0]);
+                    }
+                }
+                Err(e) => {println!("Genre not found for this album : {} : {}", alb.name, e.to_string())}
+            }
             alb.available_markets.clear();
             final_result.push(alb);
         }
@@ -71,7 +82,6 @@ impl EasyAPI {
 
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v.as_array().unwrap().len();
-        println!("Reading library : {}", size);
         for x in 0..size {
             final_result.push(serde_json::from_str(
                 &serde_json::to_string(&v[x]).unwrap(),
