@@ -6,33 +6,26 @@ use std::fs::File;
 use std::io::Write;
 
 impl EasyAPI {
-    ///  Get all the current user's albums
-    pub fn get_my_albums(
-        &mut self,
-        final_result: &mut Vec<model::album::FullAlbum>,
-    ) -> Result<(), std::io::Error> {
-        for i in 0..5 {
-            // SUPER dirty -> TODO get number of album to know how many chunks to get.
-            self.get_my_albums_chunk(i * 50, final_result).unwrap();
-        }
-        Ok(())
-    }
-    /// Get 20 albums in the user's library with a given offset
+
+    /// Get 'page_size' albums in the user's library with a given offset
     pub fn get_my_albums_chunk(
         &mut self,
         offset: u16,
+        page_size : u16,
         final_result: &mut Vec<model::album::FullAlbum>,
     ) -> Result<(), std::io::Error> {
         let mut result = String::new();
-        let errno = self.command.get_my_albums(offset, &mut result);
+        let errno = self.command.get_my_albums(offset, page_size, &mut result);
         if errno.is_err() {
             return errno;
         }
         let v: Value = serde_json::from_str(result.as_str()).unwrap();
         // Total number of albums is known in the request 
-        println!("Total number of albums  = {}", v["total"]);
         // work for playlist, we should verify the JSON out for other types to get the right thing
         let size = v["items"].as_array().unwrap().len();
+        if size != usize::from(page_size) {
+            println!("Warning get_my_albums_chunk : Page size {} different from available size {} ", page_size, size)
+        }
         for x in 0..size {
             let mut alb : model::album::FullAlbum;
             alb = serde_json::from_str(&serde_json::to_string(&v["items"][x]["album"]).unwrap(),)?;
@@ -46,7 +39,7 @@ impl EasyAPI {
     {
     
         let mut result = String::new();
-        let errno = self.command.get_my_albums(0, &mut result);
+        let errno = self.command.get_my_albums(0, 1, &mut result);
         match errno {
             Ok(()) => (),
             Err(e) => return Err(e) 

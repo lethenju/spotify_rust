@@ -124,6 +124,7 @@ impl Command {
     pub fn get_my_albums(
         &mut self,
         offset: u16,
+        page_size : u16,
         result: &mut String,
     ) -> Result<(), std::io::Error> {
         let mut list_headers = List::new();
@@ -136,7 +137,7 @@ impl Command {
 
         return self.communicator.perform(
             "https://api.spotify.com/v1/me/albums",
-            format!("limit=20&offset={}", offset).as_str(),
+            format!("limit={}&offset={}",page_size, offset).as_str(),
             "",
             list_headers,
             "GET",

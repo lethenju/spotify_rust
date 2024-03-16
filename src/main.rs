@@ -2,6 +2,7 @@ extern crate failure;
 extern crate spotify_api;
 extern crate text_io;
 
+use std::convert::TryFrom;
 #[allow(dead_code)]
 mod token_retrieval;
 mod support;
@@ -69,11 +70,11 @@ fn main() -> Result<(), failure::Error> {
             Ok(()) => {},
             Err(_err) => {}
         }
-        // TODO Get number of albums from API and if different, download missing albums
+        // Get number of albums from API and if different, download missing albums
         let mut count_result = 0;
         match easy_api_thread.lock().unwrap().get_my_albums_count() {
             Ok(count) =>  {count_result = count}, 
-            Err(e)  =>  {} 
+            Err(_e)  =>  {} 
         }
 
         let mut redownload : bool  = false;
@@ -81,30 +82,32 @@ fn main() -> Result<(), failure::Error> {
         if albums_data_library.len() as u32 != count_result
         {
             println!("Different size for album library local {} and saved {}", albums_data_library.len(), count_result);
+            // Delete local albums
+            albums_data_library.clear();
             redownload = true
         }
-
-
-        if albums_data_library.is_empty() {
+        else if albums_data_library.is_empty() {
             println!("Empty local library ");
             redownload = true
         }
 
         if redownload {
 
-            println!(".. Downloading");
-            let mut ended = false;
-            let mut i = 0;
-            while !ended {
+            println!(".. Redownloading entire album db");
+            let page_size: u16 = 50;
+            // Rounding up integer
+            let number_of_requests = u16::try_from(count_result / u32::from(page_size)).unwrap() +
+                                          u16::from((count_result % u32::from(page_size)) > 0);
+
+            for i in 0..number_of_requests {
                 let mut albums_data_chunk = Vec::new();
-                println!("Loading albums {} ", i);
-                easy_api_thread.lock().unwrap().get_my_albums_chunk(i, &mut albums_data_chunk).unwrap();
-                if albums_data_chunk.len() <20 {
-                    ended =  true;
-                }
+                // Display percentage for loaded albums
+                let percent_loaded : f32 = i as f32 * page_size as f32 / count_result as f32;
+                println!("Loading albums {}% ", percent_loaded);
+                easy_api_thread.lock().unwrap().get_my_albums_chunk(i * page_size, page_size, &mut albums_data_chunk).unwrap();
+
                 tx_thread.send(albums_data_chunk.clone()).unwrap();
                 albums_data_library.extend(albums_data_chunk.clone());
-                i+=20;
             }
             println!("Local library downloaded : saving..");
 
