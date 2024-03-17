@@ -90,3 +90,39 @@ pub fn read_library(
     println!("Library loaded ! ");
     Ok(())
 }
+
+
+pub fn read_artists(
+    json_artists: &mut String,
+) -> Result<(), std::io::Error> {
+
+    match File::open("artists") {
+        Ok(file) => {
+            let mut f = file;
+            f.read_to_string(json_artists)
+                .expect("something went wrong reading the file");
+        }
+        _ => {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "No file :(",
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// Writes the library on disk for speeding up startup
+pub fn write_library(library: Vec<crate::model::album::FullAlbum>) -> Result<(), std::io::Error> {
+    let v = serde_json::to_string(&library);
+    let mut buffer = File::create("library").unwrap();
+    write!(buffer,"{}", v.unwrap())
+}
+
+/// Writes the artists library for caching const data
+pub fn write_artists(artists: Vec<crate::model::artist::SimplifiedArtist>) -> Result<(), std::io::Error> 
+{
+    let v = serde_json::to_string(&artists);
+    let mut buffer = File::create("artists").unwrap();
+    write!(buffer,"{}", v.unwrap())
+}

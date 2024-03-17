@@ -20,6 +20,13 @@ pub struct SimplifiedArtist {
     pub uri: String,
 }
 
+impl PartialEq for SimplifiedArtist 
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
 ///[artist object full](https://developer.spotify.com/web-api/object-model/#artist-object-full)
 /// Full Artist Object
 #[derive(Clone, Debug,Serialize, Deserialize)]

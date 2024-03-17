@@ -179,7 +179,6 @@ fn show_library(ui: &Ui, app: &mut AppContext) {
                     }
                 }
             }
-            // TODO Filter by genres with checkbox
             menu.end();
         }
 

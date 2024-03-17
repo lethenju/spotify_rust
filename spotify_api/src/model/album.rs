@@ -72,6 +72,9 @@ impl FullAlbum {
     }
 }
 
+impl PartialEq for FullAlbum {
+    fn eq(&self, other: &Self) -> bool { self.id == other.id }
+}
 /// Full Albums
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FullAlbums {

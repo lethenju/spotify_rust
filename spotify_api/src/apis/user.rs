@@ -1,3 +1,6 @@
+use crate::model::album::FullAlbum;
+use crate::model::artist::SimplifiedArtist;
+
 use super::super::model;
 use super::super::EasyAPI;
 use super::super::files;
@@ -90,11 +93,72 @@ impl EasyAPI {
 
         Ok(())
     }
-    /// Write library
-    pub fn write_library(&mut self, library:  Vec<model::album::FullAlbum>)-> Result<(), std::io::Error>{
 
-            let v = serde_json::to_string(&library);
-            let mut buffer = File::create("library").unwrap();
-            write!(buffer,"{}", v.unwrap())
+    pub fn read_artists(&mut self,
+        final_result: &mut Vec<SimplifiedArtist>) -> Result<(), std::io::Error> {
+            let mut result = String::new();
+            match files::read_artists(&mut result) {
+                Ok(()) => {
+    
+                }
+                _ => {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::NotFound,
+                        "No file :(",
+                    ));
+                }
+            }
+            let v: Value = serde_json::from_str(result.as_str()).unwrap();
+    
+            let size = v.as_array().unwrap().len();
+            for x in 0..size {
+                final_result.push(serde_json::from_str(
+                    &serde_json::to_string(&v[x]).unwrap(),
+                )?);
+            }
+    
+            Ok(())
+        }
+    
+
+    /// Write library (or a chunk of it)
+    pub fn write_library(&mut self, library:  Vec<model::album::FullAlbum>)-> Result<(), std::io::Error>{
+        // only append, read library first
+        let mut existing_library = Vec::<FullAlbum>::new();
+        match self.read_library(&mut existing_library)
+        {
+            Ok(()) => {
+                for album in library.iter() {
+                    if !existing_library.contains(album)
+                    {
+                        existing_library.push(album.clone());
+                    }
+                }
+            }
+            // If the file doesnt exist, just writes the library back
+            Err(_error) => {existing_library = library}
+        }
+        return files::write_library(existing_library);
     }
+
+    // Writes artists data(or a chunk of them)
+    pub fn write_artists(&mut self, artists:  Vec<model::artist::SimplifiedArtist>)-> Result<(), std::io::Error>{
+        // only append, read artists first
+        let mut existing_artists = Vec::<SimplifiedArtist>::new();
+        match self.read_artists(&mut existing_artists)
+        {
+            Ok(()) => {
+                for artist in artists.iter() {
+                    if !existing_artists.contains(artist)
+                    {
+                        existing_artists.push(artist.clone());
+                    }
+                }
+            }
+            // If the file doesnt exist, just writes the library back
+            Err(_error) => {existing_artists = artists}
+        }
+        return files::write_artists(existing_artists);
+    }
+
 }
