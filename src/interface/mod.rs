@@ -8,7 +8,7 @@ use spotify_api::model::context::FullPlayingContext;
 use spotify_api::model::context::FullPlayingContextTimeStamped;
 
 use spotify_api::EasyAPI;
-use std::collections::HashSet;
+use std::collections::BTreeMap;
 use std::ffi::OsStr;
 use std::sync::{Arc, Mutex};
 
@@ -19,11 +19,12 @@ use std::time::Duration;
 use std::time::{SystemTime};
 pub struct UiState {
     filter_album: String,
-    genres_available: HashSet<String>,
+    // Map between nb of occurences of this genre and the name
+    genres_available: BTreeMap<String, u16>,
     artists_displayed: Vec<SimplifiedArtistWithAlbums>,
     albums_displayed: Vec<SimplifiedAlbumWithTracks>,
     show_my_albums: bool,
-    is_this_genre_checked : Vec<bool>,
+    selected_genres : Vec<String>,
     dark_theme: bool,
     pub font_normal : Option<FontId>,
     pub font_header1 : Option<FontId>,
@@ -51,10 +52,11 @@ pub struct AppContext {
 pub fn init_ui_state() -> UiState {
     return UiState {
         filter_album: String::new(),
-        genres_available: HashSet::new(),
+        genres_available: BTreeMap::new(),
         artists_displayed: Vec::new(),
         albums_displayed: Vec::new(),
         show_my_albums: false,
+        selected_genres: Vec::new(),
         font_normal : None,
         font_header1 : None,
         font_header2 : None,
@@ -162,21 +164,18 @@ fn show_library(ui: &Ui, app: &mut AppContext) {
     if let Some(menu_bar) = ui.begin_menu_bar() {
         if let Some(menu) = ui.begin_menu("Filters") {
             for genre in &app.ui_state.genres_available {
-                let mut is_checked : bool = false;
-                if ui.checkbox(format!("{}", genre), &mut is_checked)
+                let mut is_checked : bool = app.ui_state.selected_genres.contains(genre.0);
+                if ui.checkbox(format!("{}", genre.0), &mut is_checked)
                 {
-                    if is_checked {
-                        app.albums_data
-                            .sort_by (|a, b |
-                                if !a.genres.is_empty()
-                                {
-                                    return a.genres[0].cmp(genre)
-                                }else
-                                {
-                                    // Si pas de genre, alors alphabétique
-                                    return a.name.cmp(&b.name)
-                                }
-                        )
+                    if is_checked
+                    {
+                        app.ui_state.selected_genres.push(genre.0.to_string());
+                    }
+                    else if app.ui_state.selected_genres.contains(genre.0)
+                    {
+                        let index = app.ui_state.selected_genres
+                            .iter().position(|x| *x == genre.0.to_string()).unwrap();
+                        app.ui_state.selected_genres.remove(index);
                     }
                 }
             }
@@ -260,6 +259,17 @@ fn show_library(ui: &Ui, app: &mut AppContext) {
                     .contains(my_os_filter.to_str().unwrap())
             {
                 show = true;
+            }
+        }
+        if !app.ui_state.selected_genres.is_empty() {
+            show = false;
+            // Genres are selected
+            for genre in app.ui_state.selected_genres.iter()
+            {
+                if album.genres.contains(genre)
+                {
+                    show = true;
+                }   
             }
         }
         if show {
@@ -617,7 +627,12 @@ pub fn main_loop(ui: &mut Ui<'_>, app: &mut AppContext) {
             app.albums_data.extend(albums.clone());
             for alb in albums {
                 for genre in alb.genres {
-                    app.ui_state.genres_available.insert(genre.clone());
+
+                    if let Some(count) = app.ui_state.genres_available.get_mut(&genre) {
+                        *count += 1;
+                    } else {
+                        app.ui_state.genres_available.insert(genre, 1);
+                    }
                 }
             }
         }
